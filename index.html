@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="announcement">FREE SHIPPING ON 2+ SHELVES <span>•</span> 30-DAY SATISFACTION GUARANTEE</div>
+  <div class="announcement">FREE SHIPPING ON 2+ SHELVES <span>•</span> SAVE 15% ON 2 / 25% ON 3 <span>•</span> 30-DAY GUARANTEE</div>
   <header class="site-header wrap" id="top">
     <a class="brand" href="#top" aria-label="MagnaNest home">
       <span class="brand-icon" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M9 8h7v11a4 4 0 0 0 8 0V8h7v11a11 11 0 0 1-22 0V8Z"/><path d="M9 8h7M24 8h7"/></svg></span><span>MagnaNest</span>
@@ -94,7 +94,47 @@
   <footer><div class="wrap footer-inner"><div><a class="brand light-brand" href="#top"><span>MagnaNest</span></a><p>Small-space thinking for modern kitchens.</p></div><div class="footer-links"><a href="#why">Why MagnaNest</a><a href="#shop">Product</a><a href="#faq">FAQ</a></div><div class="copyright">© <span id="year"></span> MagnaNest<br><small>Independent product brand</small></div></div></footer>
 
   <div class="overlay" id="overlay" hidden></div>
-  <aside class="cart" id="cartDrawer" aria-hidden="true"><div class="cart-head"><div><p class="eyebrow"><i></i> YOUR CART</p><h3>Make some room.</h3></div><button id="cartClose" type="button">×</button></div><div class="cart-empty" id="cartEmpty"><div>✦</div><h4>Your cart is empty</h4><p>Choose a MagnaNest setup and it’ll appear here.</p><button class="btn dark" id="emptyShop" type="button">Shop now</button></div><div class="cart-filled" id="cartFilled" hidden><div class="cart-item"><div class="thumb"><span></span></div><div><b>MagnaNest Magnetic Shelf</b><small id="cartBundleLabel">1 Shelf</small><div class="qty"><button id="minus" type="button">−</button><span id="cartQty">1</span><button id="plus" type="button">+</button></div></div><strong id="itemPrice">$24.95</strong></div><div class="shipping"><div><span id="progress"></span></div><p id="shipMessage">Add another shelf for free shipping.</p></div><div class="subtotal"><span>Subtotal</span><strong id="subtotal">$24.95</strong></div><p class="tax-note">Your selected bundle is saved in the cart.</p></div></aside>
+  <aside class="cart" id="cartDrawer" aria-hidden="true"><div class="cart-head"><div><p class="eyebrow"><i></i> YOUR CART</p><h3>Make some room.</h3></div><button id="cartClose" type="button">×</button></div><div class="cart-empty" id="cartEmpty"><div>✦</div><h4>Your cart is empty</h4><p>Choose a MagnaNest setup and it’ll appear here.</p><button class="btn dark" id="emptyShop" type="button">Shop now</button></div><div class="cart-filled" id="cartFilled" hidden>
+      <div class="cart-item">
+        <div class="thumb"><img src="assets/magnanest-product-1.webp" alt="MagnaNest magnetic refrigerator shelf"></div>
+        <div><b>MagnaNest Magnetic Shelf</b><small id="cartBundleLabel">1 Shelf</small><div class="qty"><button id="minus" type="button" aria-label="Remove one shelf">−</button><span id="cartQty">1</span><button id="plus" type="button" aria-label="Add one shelf">+</button></div></div>
+        <strong id="itemPrice">$24.95</strong>
+      </div>
+      <div class="shipping"><div><span id="progress"></span></div><p id="shipMessage">Add another shelf for free shipping.</p></div>
+      <div class="cart-savings" id="cartSavings" hidden><span>Bundle savings</span><strong id="savingsValue">$0.00</strong></div>
+      <div class="cart-upsell" id="cartUpsell">
+        <p class="upsell-kicker">SMART BUNDLE</p>
+        <h4 id="upsellTitle">Upgrade to 2 shelves</h4>
+        <p id="upsellCopy">Add one more shelf to unlock free shipping and 15% bundle savings.</p>
+        <button class="upsell-btn" id="upsellButton" type="button" data-target="2">Upgrade &amp; save 15%</button>
+      </div>
+      <div class="subtotal"><span>Subtotal</span><strong id="subtotal">$24.95</strong></div>
+      <p class="tax-note">Bundle pricing updates automatically as you change quantity.</p>
+    </div></aside>
+  <div class="offer-modal" id="offerModal" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="offerTitle">
+    <div class="offer-card">
+      <button class="modal-x offer-x" id="offerClose" type="button" aria-label="Close bundle offer">×</button>
+      <div class="offer-photo"><img src="assets/magnanest-product-2.webp" alt="MagnaNest magnetic refrigerator shelf bundle"></div>
+      <div class="offer-body">
+        <p class="eyebrow"><i></i> ONE-TAP BUNDLE UPGRADE</p>
+        <span class="offer-badge" id="offerBadge">FREE SHIPPING</span>
+        <h3 id="offerTitle">Make it a pair and save 15%.</h3>
+        <p id="offerText">Add a second shelf before checkout and unlock the 2-pack bundle price plus free shipping.</p>
+        <div class="offer-price"><span id="offerWas">$49.90 regular</span><strong id="offerPrice">$42.42 total</strong></div>
+        <button class="btn lime offer-accept" id="acceptOffer" type="button">Upgrade my bundle <span>→</span></button>
+        <button class="offer-decline" id="declineOffer" type="button">Keep my current bundle</button>
+      </div>
+    </div>
+  </div>
+
+  <aside class="promo-toast" id="promoToast" hidden aria-live="polite">
+    <button id="promoClose" type="button" aria-label="Dismiss bundle offer">×</button>
+    <small>BUNDLE SAVINGS ACTIVE</small>
+    <strong>2 shelves save 15%. 3 save 25%.</strong>
+    <span>Plus free shipping when you choose 2 or more.</span>
+    <button class="promo-link" id="promoShop" type="button">See bundle deals →</button>
+  </aside>
+
   <div class="mobile-buy"><div><span>MagnaNest</span><b id="mobilePrice">$24.95</b></div><a class="btn lime" href="#shop">Choose bundle</a></div>
   <script src="app.js"></script>
 </body>
