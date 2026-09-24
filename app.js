@@ -265,6 +265,26 @@ if(window.matchMedia('(pointer:fine)').matches&&!window.matchMedia('(prefers-red
   });
 }
 
+
+/* Rotating truthful promo bar */
+const announcement=$('.announcement');
+const promoMessages=[
+  'FREE SHIPPING ON 2+ SHELVES • SAVE 15% ON 2',
+  'BEST VALUE: 3 SHELVES SAVE 25% • FREE SHIPPING',
+  '30-DAY SATISFACTION GUARANTEE • TOOL-FREE SETUP'
+];
+let promoMessageIndex=0;
+if(announcement&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+  setInterval(()=>{
+    promoMessageIndex=(promoMessageIndex+1)%promoMessages.length;
+    announcement.classList.add('changing');
+    setTimeout(()=>{
+      announcement.textContent=promoMessages[promoMessageIndex];
+      announcement.classList.remove('changing');
+    },180);
+  },4200);
+}
+
 $('#year').textContent=new Date().getFullYear();
 chooseBundle(1);
 renderCart();
