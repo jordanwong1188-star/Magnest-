@@ -159,3 +159,7 @@ details[open] summary span{transform:rotate(45deg);color:var(--accent)}
 @media(prefers-reduced-motion:reduce){
   .offer-card,.promo-toast,.cart-upsell.pulse{animation:none!important}
 }
+
+/* Promo bar transition */
+.announcement{transition:opacity .18s ease,transform .18s ease}
+.announcement.changing{opacity:.25;transform:translateY(-2px)}
