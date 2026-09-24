@@ -167,10 +167,12 @@ $('#emptyShop').addEventListener('click',()=>{
 });
 $('#minus').addEventListener('click',()=>{
   cartQty=Math.max(0,cartQty-1);
+  if(cartQty>=1)chooseBundle(cartQty);
   renderCart();
 });
 $('#plus').addEventListener('click',()=>{
-  cartQty++;
+  cartQty=Math.min(3,cartQty+1);
+  chooseBundle(cartQty);
   renderCart();
 });
 $('#upsellButton').addEventListener('click',e=>{
