@@ -3,6 +3,8 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const bundles={1:24.95,2:42.42,3:56.14};
 let selected=1,cartQty=0;
 const money=n=>'$'+n.toFixed(2);
+const sessionGet=k=>{try{return sessionStorage.getItem(k)}catch{return null}};
+const sessionSet=(k,v)=>{try{sessionStorage.setItem(k,v)}catch{}};
 
 function selectedPrice(){return bundles[selected]||selected*24.95}
 
@@ -24,20 +26,65 @@ function cartPrice(q){
   return 0;
 }
 
+function renderUpsell(q){
+  const card=$('#cartUpsell');
+  const title=$('#upsellTitle');
+  const copy=$('#upsellCopy');
+  const btn=$('#upsellButton');
+  if(!card||!title||!copy||!btn)return;
+  card.classList.remove('unlocked');
+
+  if(q===1){
+    card.hidden=false;
+    title.textContent='Upgrade to 2 shelves';
+    copy.textContent='Add one more for only $17.47 more, unlock free shipping, and save 15% versus buying separately.';
+    btn.hidden=false;
+    btn.dataset.target='2';
+    btn.textContent='Upgrade & save 15%';
+  }else if(q===2){
+    card.hidden=false;
+    title.textContent='Go best value with 3';
+    copy.textContent='Add a third shelf for only $13.72 more and move to 25% bundle savings.';
+    btn.hidden=false;
+    btn.dataset.target='3';
+    btn.textContent='Add 3rd shelf & save 25%';
+  }else{
+    card.hidden=false;
+    card.classList.add('unlocked');
+    title.textContent='Best-value pricing unlocked';
+    copy.textContent='You have the strongest bundle pricing active in your cart.';
+    btn.hidden=true;
+  }
+}
+
 function renderCart(){
   const has=cartQty>0;
   $('#cartEmpty').hidden=has;
   $('#cartFilled').hidden=!has;
   $('#cartCount').textContent=cartQty;
   if(!has)return;
+
   const price=cartPrice(cartQty);
+  const regular=cartQty*24.95;
+  const saved=Math.max(0,regular-price);
+
   $('#cartQty').textContent=cartQty;
   $('#itemPrice').textContent=money(price);
   $('#subtotal').textContent=money(price);
   $('#cartBundleLabel').textContent=cartQty===1?'1 Shelf':cartQty+' Shelves';
+
   const free=cartQty>=2;
   $('#progress').style.width=free?'100%':'50%';
   $('#shipMessage').textContent=free?'✓ Free shipping unlocked.':'Add one more shelf to unlock free shipping.';
+
+  const savings=$('#cartSavings');
+  if(saved>0){
+    savings.hidden=false;
+    $('#savingsValue').textContent='−'+money(saved);
+  }else{
+    savings.hidden=true;
+  }
+  renderUpsell(cartQty);
 }
 
 function openCart(){
@@ -49,10 +96,54 @@ function openCart(){
   });
 }
 
+function hideOffer(){
+  const modal=$('#offerModal');
+  if(!modal)return;
+  modal.hidden=true;
+  modal.setAttribute('aria-hidden','true');
+}
+
 function closeCart(){
+  hideOffer();
   $('#overlay').hidden=true;
   $('#cartDrawer').classList.remove('open');
   $('#cartDrawer').setAttribute('aria-hidden','true');
+}
+
+function configureOffer(target){
+  if(target===2){
+    $('#offerBadge').textContent='FREE SHIPPING';
+    $('#offerTitle').textContent='Make it a pair and save 15%.';
+    $('#offerText').textContent='Add a second shelf before checkout and unlock the 2-pack bundle price plus free shipping.';
+    $('#offerWas').textContent='$49.90 regular';
+    $('#offerPrice').textContent='$42.42 total';
+  }else{
+    $('#offerBadge').textContent='BEST VALUE';
+    $('#offerTitle').textContent='Add a third and save 25%.';
+    $('#offerText').textContent='Upgrade to the 3-shelf bundle for the strongest per-shelf price and keep free shipping unlocked.';
+    $('#offerWas').textContent='$74.85 regular';
+    $('#offerPrice').textContent='$56.14 total';
+  }
+  $('#acceptOffer').dataset.target=String(target);
+}
+
+function showPostAddOffer(){
+  if(cartQty>=3||sessionGet('mnPostAddOfferSeen')==='1')return;
+  const target=cartQty===1?2:3;
+  configureOffer(target);
+  sessionSet('mnPostAddOfferSeen','1');
+  setTimeout(()=>{
+    if(cartQty<=0)return;
+    const modal=$('#offerModal');
+    modal.hidden=false;
+    modal.setAttribute('aria-hidden','false');
+  },520);
+}
+
+function showPromoToast(){
+  if(cartQty>0||sessionGet('mnPromoSeen')==='1')return;
+  sessionSet('mnPromoSeen','1');
+  $('#promoToast').hidden=false;
 }
 
 $$('.bundle').forEach(b=>b.addEventListener('click',()=>chooseBundle(+b.dataset.qty)));
@@ -64,6 +155,7 @@ $('#addToCart').addEventListener('click',()=>{
   pill.classList.remove('bump');
   void pill.offsetWidth;
   pill.classList.add('bump');
+  showPostAddOffer();
 });
 
 $('#cartOpen').addEventListener('click',openCart);
@@ -81,9 +173,39 @@ $('#plus').addEventListener('click',()=>{
   cartQty++;
   renderCart();
 });
+$('#upsellButton').addEventListener('click',e=>{
+  const target=+e.currentTarget.dataset.target;
+  if(!target)return;
+  cartQty=target;
+  chooseBundle(Math.min(target,3));
+  renderCart();
+  e.currentTarget.closest('.cart-upsell')?.classList.add('pulse');
+  setTimeout(()=>e.currentTarget.closest('.cart-upsell')?.classList.remove('pulse'),420);
+});
+$('#offerClose').addEventListener('click',hideOffer);
+$('#declineOffer').addEventListener('click',hideOffer);
+$('#acceptOffer').addEventListener('click',e=>{
+  const target=+e.currentTarget.dataset.target;
+  cartQty=target;
+  chooseBundle(target);
+  renderCart();
+  hideOffer();
+  const card=$('#cartUpsell');
+  card?.classList.add('pulse');
+  setTimeout(()=>card?.classList.remove('pulse'),420);
+});
+$('#promoClose').addEventListener('click',()=>{$('#promoToast').hidden=true});
+$('#promoShop').addEventListener('click',()=>{
+  $('#promoToast').hidden=true;
+  chooseBundle(2);
+  $('#shop').scrollIntoView({behavior:'smooth',block:'center'});
+});
 
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape')closeCart();
+  if(e.key==='Escape'){
+    if(!$('#offerModal').hidden)hideOffer();
+    else closeCart();
+  }
 });
 
 /* Product gallery */
@@ -137,13 +259,14 @@ if(window.matchMedia('(pointer:fine)').matches&&!window.matchMedia('(prefers-red
       const y=(e.clientY-r.top)/r.height-.5;
       img.style.transform=`scale(1.045) translate(${x*7}px,${y*7}px)`;
     });
-    frame.addEventListener('pointerleave',()=>{img.style.transform='';});
+    frame.addEventListener('pointerleave',()=>{img.style.transform=''});
   });
 }
 
 $('#year').textContent=new Date().getFullYear();
 chooseBundle(1);
 renderCart();
+setTimeout(showPromoToast,6500);
 
 requestAnimationFrame(()=>{
   const hero=$('.hero-art');
