@@ -461,9 +461,39 @@
     if (dialog && !dialog.contains(event.target)) focusFirst(dialog);
   });
 
-  /* Keep gallery selection and image descriptions in sync, including quick clicks. */
+  /* Keep responsive sources, fallbacks and descriptions aligned with the selected view. */
   const mainImage = $('#productMain');
   const mainFrame = $('.product-main-frame');
+  const imageFallbackState = new WeakMap();
+
+  function resolveImageSource(source) {
+    try { return new URL(source, document.baseURI).href; } catch { return source; }
+  }
+
+  function recoverCdnImage(image) {
+    const state = imageFallbackState.get(image);
+    const fallback = image.dataset.fallback;
+    if (!state || state.used || !fallback) return;
+    const currentSource = image.currentSrc;
+    const sources = [image.getAttribute('src') || ''];
+    const srcset = image.getAttribute('srcset');
+    if (srcset) srcset.split(',').forEach(candidate => sources.push(candidate.trim().split(/\s+/)[0]));
+    /* Ignore an old request's error after a visitor selects another gallery view. */
+    if (currentSource && !sources.some(source =>
+      resolveImageSource(source) === resolveImageSource(currentSource))) return;
+    state.used = true;
+    image.removeAttribute('srcset');
+    image.removeAttribute('sizes');
+    image.src = fallback;
+  }
+
+  $$('.cdn-image').forEach(image => {
+    imageFallbackState.set(image, { used: false });
+    image.addEventListener('error', () => recoverCdnImage(image));
+    /* A deferred script may attach after the initial CDN request has already failed. */
+    if (image.complete && image.naturalWidth === 0) recoverCdnImage(image);
+  });
+
   $$('.gallery-thumb').forEach(button => {
     button.setAttribute('aria-pressed', String(button.classList.contains('active')));
     button.addEventListener('click', async () => {
@@ -476,8 +506,15 @@
         thumb.setAttribute('aria-pressed', String(active));
       });
       if (mainFrame && !reducedMotion.matches) mainFrame.classList.add('switching');
-      mainImage.src = next;
+      imageFallbackState.set(mainImage, { used: false });
+      if (button.dataset.fallback) mainImage.dataset.fallback = button.dataset.fallback;
+      else delete mainImage.dataset.fallback;
+      if (button.dataset.sizes) mainImage.setAttribute('sizes', button.dataset.sizes);
+      else mainImage.removeAttribute('sizes');
+      if (button.dataset.srcset) mainImage.setAttribute('srcset', button.dataset.srcset);
+      else mainImage.removeAttribute('srcset');
       mainImage.alt = button.dataset.alt || button.getAttribute('aria-label') || 'MagnaNest magnetic shelf';
+      mainImage.src = next;
       try { if (typeof mainImage.decode === 'function') await mainImage.decode(); } catch {}
       if (revision === galleryRevision && mainFrame) mainFrame.classList.remove('switching');
     });

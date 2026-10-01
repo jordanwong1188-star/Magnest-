@@ -302,7 +302,7 @@ button, a, summary { touch-action: manipulation; }
 .product-main-frame {
   position: relative;
   overflow: hidden;
-  aspect-ratio: 1 / 1.08;
+  aspect-ratio: 4 / 5;
   background: #ebece5;
   border: 1px solid var(--line);
   border-radius: 3px;
@@ -310,7 +310,7 @@ button, a, summary { touch-action: manipulation; }
 .product-main-frame > img {
   height: 100%;
   width: 100%;
-  object-fit: cover;
+  object-fit: contain;
   transition: opacity .18s ease;
 }
 .product-main-frame.switching > img { opacity: .3; }
@@ -646,7 +646,7 @@ footer p { margin: 9px 0 0; font-size: 11px; color: #b8c1af; }
   .bundle > strong em { font-size: 8px; }
   .bundle-unit, .bundle > strong .bundle-unit { font-size: 8px; }
   .gallery-thumbs { gap: 6px; }
-  .product-main-frame { aspect-ratio: 3 / 4; }
+  .product-main-frame { aspect-ratio: 4 / 5; }
   .story-head { grid-template-columns: 1.3fr 1fr; gap: 35px; }
   .story-head h2, .section-title h2, .how h2, .faq h2 { font-size: 46px; }
   .photo-grid { gap: 13px; }
@@ -694,7 +694,7 @@ footer p { margin: 9px 0 0; font-size: 11px; color: #b8c1af; }
   .ticker { padding-block: 14px; }
   .ticker > div { gap: 35px; font-size: 9px; letter-spacing: .12em; }
   .product { grid-template-columns: 1fr; gap: 29px; padding-block: 48px 62px; }
-  .product-main-frame { aspect-ratio: 1 / 1.07; }
+  .product-main-frame { aspect-ratio: 4 / 5; }
   .badge { left: 13px; top: 13px; font-size: 8px; }
   .gallery-thumbs { gap: 9px; margin-top: 10px; }
   .product-copy { padding-top: 0; }

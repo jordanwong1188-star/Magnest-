@@ -16,6 +16,14 @@ HTML, CSS and vanilla JavaScript, with no build step. Publish the repository roo
 
 The redesign puts the product and bundle selection directly after the hero. It retains the browsing promotion and optional post-add bundle promotion, adds persistent cart state, and improves keyboard use and mobile buying controls.
 
+## Product imagery
+
+The five `assets/magnanest-*-hd.png` files are AI-assisted clarity enhancements of the supplied product photos, at 1122 × 1402 pixels. The page requests responsive 360, 720 and 1122 pixel WebP versions through Netlify Image CDN instead of downloading full PNGs for every visitor.
+
+Original valid product photos remain as small thumbnails and fallbacks. Product photos 1–3 have been restored from the intact supplied originals; the previous first image was incomplete. Gallery JavaScript resets image candidates and fallback state when selecting a different view. The main gallery uses a 4:5 frame with `object-fit: contain` to show the whole product.
+
+Netlify Image CDN requires a Netlify deployment. Opening `index.html` directly uses the original-photo fallback after a CDN request fails. No remote image allowlist or API keys are needed.
+
 ## Payments
 
 Real checkout is intentionally unavailable until payment and fulfillment are connected. The storefront displays that status. No card information is collected by this site.
