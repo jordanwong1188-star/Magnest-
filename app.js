@@ -1,296 +1,586 @@
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+(() => {
+  'use strict';
 
-const bundles={1:24.95,2:42.42,3:56.14};
-let selected=1,cartQty=0;
-const money=n=>'$'+n.toFixed(2);
-const sessionGet=k=>{try{return sessionStorage.getItem(k)}catch{return null}};
-const sessionSet=(k,v)=>{try{sessionStorage.setItem(k,v)}catch{}};
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => Array.from(document.querySelectorAll(selector));
+  const UNIT_CENTS = 2495;
+  const MAX_QTY = 12;
+  const CART_KEY = 'magnanest.cart.v2';
+  const SELECTION_KEY = 'magnanest.selection.v2';
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const mobileQuery = window.matchMedia('(max-width: 700px)');
+  const memorySession = new Set();
+  const cart = $('#cartDrawer');
+  const overlay = $('#overlay');
+  const offer = $('#offerModal');
+  const promo = $('#promoToast');
+  const mobileBuy = $('.mobile-buy');
+  const purchaseButton = $('#addToCart');
+  const hero = $('.hero');
+  let cartIsOpen = false;
+  let cartReturnFocus = null;
+  let offerReturnFocus = null;
+  let offerTimer = null;
+  let cartRevision = 0;
+  let promoReady = false;
+  let purchaseInView = false;
+  let galleryRevision = 0;
+  const backgroundState = new Map();
+  let persistenceAvailable = true;
 
-function selectedPrice(){return bundles[selected]||selected*24.95}
+  const money = cents => '$' + (cents / 100).toFixed(2);
+  const text = (selector, value) => {
+    const element = $(selector);
+    if (element) element.textContent = value;
+  };
+  const listen = (selector, event, handler) => {
+    const element = $(selector);
+    if (element) element.addEventListener(event, handler);
+  };
+  const validQuantity = (value, minimum, maximum) =>
+    Number.isInteger(value) && value >= minimum && value <= maximum;
+  const readQuantity = (key, fallback, minimum, maximum) => {
+    try {
+      const raw = window.localStorage.getItem(key);
+      if (raw === null) return fallback;
+      const value = JSON.parse(raw);
+      return validQuantity(value, minimum, maximum) ? value : fallback;
+    } catch {
+      persistenceAvailable = false;
+      return fallback;
+    }
+  };
+  const persistQuantity = (key, value) => {
+    try { window.localStorage.setItem(key, JSON.stringify(value)); } catch { persistenceAvailable = false; }
+  };
+  const sessionSeen = key => {
+    if (memorySession.has(key)) return true;
+    try { return window.sessionStorage.getItem(key) === '1'; } catch { return false; }
+  };
+  const markSessionSeen = key => {
+    memorySession.add(key);
+    try { window.sessionStorage.setItem(key, '1'); } catch {}
+  };
 
-function chooseBundle(q){
-  selected=q;
-  $$('.bundle').forEach(b=>{
-    const on=+b.dataset.qty===q;
-    b.classList.toggle('active',on);
-    b.setAttribute('aria-pressed',on);
-  });
-  $('#buttonPrice').textContent=money(selectedPrice());
-  $('#mobilePrice').textContent=money(selectedPrice());
-}
+  let selected = readQuantity(SELECTION_KEY, 1, 1, 3);
+  let cartQty = readQuantity(CART_KEY, 0, 0, MAX_QTY);
 
-function cartPrice(q){
-  if(q>=3)return 56.14+(q-3)*18.71;
-  if(q===2)return 42.42;
-  if(q===1)return 24.95;
-  return 0;
-}
-
-function renderUpsell(q){
-  const card=$('#cartUpsell');
-  const title=$('#upsellTitle');
-  const copy=$('#upsellCopy');
-  const btn=$('#upsellButton');
-  if(!card||!title||!copy||!btn)return;
-  card.classList.remove('unlocked');
-
-  if(q===1){
-    card.hidden=false;
-    title.textContent='Upgrade to 2 shelves';
-    copy.textContent='Add one more for only $17.47 more, unlock free shipping, and save 15% versus buying separately.';
-    btn.hidden=false;
-    btn.dataset.target='2';
-    btn.textContent='Upgrade & save 15%';
-  }else if(q===2){
-    card.hidden=false;
-    title.textContent='Go best value with 3';
-    copy.textContent='Add a third shelf for only $13.72 more and move to 25% bundle savings.';
-    btn.hidden=false;
-    btn.dataset.target='3';
-    btn.textContent='Add 3rd shelf & save 25%';
-  }else{
-    card.hidden=false;
-    card.classList.add('unlocked');
-    title.textContent='Best-value pricing unlocked';
-    copy.textContent='You have the strongest bundle pricing active in your cart.';
-    btn.hidden=true;
+  function cartPrice(quantity) {
+    if (!validQuantity(quantity, 0, MAX_QTY)) return 0;
+    if (quantity === 0) return 0;
+    if (quantity === 1) return UNIT_CENTS;
+    if (quantity === 2) return 4242;
+    return Math.round(quantity * UNIT_CENTS * 0.75);
   }
-}
 
-function renderCart(){
-  const has=cartQty>0;
-  $('#cartEmpty').hidden=has;
-  $('#cartFilled').hidden=!has;
-  $('#cartCount').textContent=cartQty;
-  if(!has)return;
-
-  const price=cartPrice(cartQty);
-  const regular=cartQty*24.95;
-  const saved=Math.max(0,regular-price);
-
-  $('#cartQty').textContent=cartQty;
-  $('#itemPrice').textContent=money(price);
-  $('#subtotal').textContent=money(price);
-  $('#cartBundleLabel').textContent=cartQty===1?'1 Shelf':cartQty+' Shelves';
-
-  const free=cartQty>=2;
-  $('#progress').style.width=free?'100%':'50%';
-  $('#shipMessage').textContent=free?'✓ Free shipping unlocked.':'Add one more shelf to unlock free shipping.';
-
-  const savings=$('#cartSavings');
-  if(saved>0){
-    savings.hidden=false;
-    $('#savingsValue').textContent='−'+money(saved);
-  }else{
-    savings.hidden=true;
+  function checkoutUrl(quantity) {
+    if (!validQuantity(quantity, 1, MAX_QTY)) return null;
+    const config = window.MAGNANEST_CHECKOUT;
+    if (!config || config.currency !== 'USD' || !config.urls ||
+        !Object.prototype.hasOwnProperty.call(config.urls, String(quantity))) return null;
+    const value = config.urls[quantity];
+    if (typeof value !== 'string' || !value.trim()) return null;
+    try {
+      const url = new URL(value);
+      if (url.protocol !== 'https:' || !url.hostname || url.username || url.password) return null;
+      return url.href;
+    } catch {
+      return null;
+    }
   }
-  renderUpsell(cartQty);
-}
 
-function openCart(){
-  renderCart();
-  $('#overlay').hidden=false;
-  requestAnimationFrame(()=>{
-    $('#cartDrawer').classList.add('open');
-    $('#cartDrawer').setAttribute('aria-hidden','false');
-  });
-}
-
-function hideOffer(){
-  const modal=$('#offerModal');
-  if(!modal)return;
-  modal.hidden=true;
-  modal.setAttribute('aria-hidden','true');
-}
-
-function closeCart(){
-  hideOffer();
-  $('#overlay').hidden=true;
-  $('#cartDrawer').classList.remove('open');
-  $('#cartDrawer').setAttribute('aria-hidden','true');
-}
-
-function configureOffer(target){
-  if(target===2){
-    $('#offerBadge').textContent='FREE SHIPPING';
-    $('#offerTitle').textContent='Make it a pair and save 15%.';
-    $('#offerText').textContent='Add a second shelf before checkout and unlock the 2-pack bundle price plus free shipping.';
-    $('#offerWas').textContent='$49.90 regular';
-    $('#offerPrice').textContent='$42.42 total';
-  }else{
-    $('#offerBadge').textContent='BEST VALUE';
-    $('#offerTitle').textContent='Add a third and save 25%.';
-    $('#offerText').textContent='Upgrade to the 3-shelf bundle for the strongest per-shelf price and keep free shipping unlocked.';
-    $('#offerWas').textContent='$74.85 regular';
-    $('#offerPrice').textContent='$56.14 total';
+  function checkoutQuantities() {
+    return Array.from({ length: MAX_QTY }, (_, index) => index + 1)
+      .filter(quantity => checkoutUrl(quantity));
   }
-  $('#acceptOffer').dataset.target=String(target);
-}
 
-function showPostAddOffer(){
-  if(cartQty>=3||sessionGet('mnPostAddOfferSeen')==='1')return;
-  const target=cartQty===1?2:3;
-  configureOffer(target);
-  sessionSet('mnPostAddOfferSeen','1');
-  setTimeout(()=>{
-    if(cartQty<=0)return;
-    const modal=$('#offerModal');
-    modal.hidden=false;
-    modal.setAttribute('aria-hidden','false');
-  },520);
-}
-
-function showPromoToast(){
-  if(cartQty>0||sessionGet('mnPromoSeen')==='1')return;
-  sessionSet('mnPromoSeen','1');
-  $('#promoToast').hidden=false;
-}
-
-$$('.bundle').forEach(b=>b.addEventListener('click',()=>chooseBundle(+b.dataset.qty)));
-
-$('#addToCart').addEventListener('click',()=>{
-  cartQty=selected;
-  openCart();
-  const pill=$('#cartOpen');
-  pill.classList.remove('bump');
-  void pill.offsetWidth;
-  pill.classList.add('bump');
-  showPostAddOffer();
-});
-
-$('#cartOpen').addEventListener('click',openCart);
-$('#cartClose').addEventListener('click',closeCart);
-$('#overlay').addEventListener('click',closeCart);
-$('#emptyShop').addEventListener('click',()=>{
-  closeCart();
-  $('#shop').scrollIntoView({behavior:'smooth'});
-});
-$('#minus').addEventListener('click',()=>{
-  cartQty=Math.max(0,cartQty-1);
-  if(cartQty>=1)chooseBundle(cartQty);
-  renderCart();
-});
-$('#plus').addEventListener('click',()=>{
-  cartQty=Math.min(3,cartQty+1);
-  chooseBundle(cartQty);
-  renderCart();
-});
-$('#upsellButton').addEventListener('click',e=>{
-  const target=+e.currentTarget.dataset.target;
-  if(!target)return;
-  cartQty=target;
-  chooseBundle(Math.min(target,3));
-  renderCart();
-  e.currentTarget.closest('.cart-upsell')?.classList.add('pulse');
-  setTimeout(()=>e.currentTarget.closest('.cart-upsell')?.classList.remove('pulse'),420);
-});
-$('#offerClose').addEventListener('click',hideOffer);
-$('#declineOffer').addEventListener('click',hideOffer);
-$('#acceptOffer').addEventListener('click',e=>{
-  const target=+e.currentTarget.dataset.target;
-  cartQty=target;
-  chooseBundle(target);
-  renderCart();
-  hideOffer();
-  const card=$('#cartUpsell');
-  card?.classList.add('pulse');
-  setTimeout(()=>card?.classList.remove('pulse'),420);
-});
-$('#promoClose').addEventListener('click',()=>{$('#promoToast').hidden=true});
-$('#promoShop').addEventListener('click',()=>{
-  $('#promoToast').hidden=true;
-  chooseBundle(2);
-  $('#shop').scrollIntoView({behavior:'smooth',block:'center'});
-});
-
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){
-    if(!$('#offerModal').hidden)hideOffer();
-    else closeCart();
+  function checkoutQuantityDescription(quantities) {
+    const labels = quantities.map(quantity => quantity + (quantity === 1 ? ' shelf' : ' shelves'));
+    if (labels.length < 2) return labels[0] || '';
+    return labels.slice(0, -1).join(', ') + ' or ' + labels[labels.length - 1];
   }
-});
 
-/* Product gallery */
-const mainFrame=$('.product-main-frame');
-const mainImage=$('#productMain');
-$$('.gallery-thumb').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    if(btn.classList.contains('active'))return;
-    $$('.gallery-thumb').forEach(x=>x.classList.remove('active'));
-    btn.classList.add('active');
-    mainFrame?.classList.add('switching');
-    const next=btn.dataset.image;
-    const swap=()=>{
-      if(mainImage)mainImage.src=next;
-      requestAnimationFrame(()=>mainFrame?.classList.remove('switching'));
-    };
-    setTimeout(swap,150);
-  });
-});
+  function renderCheckout() {
+    const enabled = Boolean(cartQty > 0 && checkoutUrl(cartQty));
+    const button = $('#checkoutButton');
+    if (button) {
+      button.disabled = !enabled;
+      button.setAttribute('aria-disabled', String(!enabled));
+    }
+    const availableQuantities = checkoutQuantities();
+    const available = availableQuantities.length > 0;
+    text('#checkoutStatus', enabled
+      ? 'Shipping and taxes are confirmed at checkout.'
+      : available
+        ? 'Please choose ' + checkoutQuantityDescription(availableQuantities) + ' to continue to checkout.'
+        : persistenceAvailable
+          ? 'Online ordering opens soon. Your selection is saved on this device.'
+          : 'Online ordering opens soon. Your selection is kept for this visit.');
+    text('#productAvailability', available
+      ? 'Choose your setup. Shipping and taxes are confirmed at checkout.'
+      : persistenceAvailable
+        ? 'Online ordering opens soon. You can explore bundles and save your selection on this device.'
+        : 'Online ordering opens soon. You can explore bundles during this visit.');
+  }
 
-/* Scroll reveal */
-const revealItems=$$('.reveal,.reveal-scale');
-if('IntersectionObserver' in window){
-  const observer=new IntersectionObserver(entries=>{
-    entries.forEach(entry=>{
-      if(entry.isIntersecting){
-        entry.target.classList.add('is-visible');
-        observer.unobserve(entry.target);
+  function chooseBundle(quantity) {
+    if (!validQuantity(quantity, 1, 3)) return;
+    selected = quantity;
+    persistQuantity(SELECTION_KEY, selected);
+    $$('.bundle').forEach(button => {
+      const active = Number(button.dataset.qty) === selected;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', String(active));
+    });
+    const price = money(cartPrice(selected));
+    text('#buttonPrice', price);
+    text('#mobilePrice', price);
+    text('#selectionSummary', selected + (selected === 1 ? ' shelf' : ' shelves') + ' · ' + price +
+      (selected === 1 ? ' total' : ' total · save ' + money(selected * UNIT_CENTS - cartPrice(selected))));
+  }
+
+  function renderUpsell() {
+    const card = $('#cartUpsell');
+    const button = $('#upsellButton');
+    if (!card) return;
+    card.hidden = cartQty === 0;
+    card.classList.toggle('unlocked', cartQty >= 3);
+    if (cartQty === 1 || cartQty === 2) {
+      const target = cartQty + 1;
+      const extra = money(cartPrice(target) - cartPrice(cartQty));
+      const percentage = target === 2 ? '15%' : '25%';
+      text('#upsellTitle', target === 2 ? 'Make it a pair.' : 'Complete your setup.');
+      text('#upsellCopy', 'Add one more shelf for ' + extra + ' more. Your ' + target +
+        '-shelf total is ' + money(cartPrice(target)) + ', with ' + percentage +
+        ' bundle savings and free shipping.');
+      if (button) {
+        button.hidden = false;
+        button.dataset.target = String(target);
+        button.textContent = 'Add one shelf · +' + extra;
+      }
+    } else {
+      text('#upsellTitle', 'Best-value pricing unlocked');
+      text('#upsellCopy', 'Your cart includes 25% bundle savings and free shipping.');
+      if (button) button.hidden = true;
+    }
+  }
+
+  function renderCart() {
+    const hasItems = cartQty > 0;
+    const empty = $('#cartEmpty');
+    const filled = $('#cartFilled');
+    if (empty) empty.hidden = hasItems;
+    if (filled) filled.hidden = !hasItems;
+    text('#cartCount', String(cartQty));
+    const cartOpenButton = $('#cartOpen');
+    if (cartOpenButton) cartOpenButton.setAttribute('aria-label',
+      'Open cart, ' + cartQty + (cartQty === 1 ? ' shelf' : ' shelves'));
+    const price = cartPrice(cartQty);
+    const saved = cartQty * UNIT_CENTS - price;
+    text('#cartQty', String(cartQty));
+    text('#itemPrice', money(price));
+    text('#subtotal', money(price));
+    text('#cartBundleLabel', cartQty + (cartQty === 1 ? ' Shelf' : ' Shelves'));
+    text('#cartUnitPrice', cartQty ? money(Math.round(price / cartQty)) + ' per shelf' : '');
+    const progress = $('#progress');
+    if (progress) progress.style.width = cartQty >= 2 ? '100%' : cartQty === 1 ? '50%' : '0%';
+    text('#shipMessage', cartQty >= 2 ? 'Free shipping included with 2+ shelves.'
+      : 'Add one more shelf for free shipping.');
+    const savings = $('#cartSavings');
+    if (savings) savings.hidden = saved <= 0;
+    text('#savingsValue', '−' + money(Math.max(0, saved)));
+    const minus = $('#minus');
+    const plus = $('#plus');
+    if (minus) minus.disabled = cartQty === 0;
+    if (plus) plus.disabled = cartQty >= MAX_QTY;
+    renderUpsell();
+    renderCheckout();
+  }
+
+  function cancelPendingOffer() {
+    if (offerTimer !== null) window.clearTimeout(offerTimer);
+    offerTimer = null;
+  }
+
+  function setCartQuantity(quantity) {
+    if (!validQuantity(quantity, 0, MAX_QTY)) return false;
+    cancelPendingOffer();
+    cartRevision += 1;
+    cartQty = quantity;
+    persistQuantity(CART_KEY, cartQty);
+    renderCart();
+    if (cartIsOpen && !(offer && !offer.hidden) && !canFocus(document.activeElement)) focusFirst(cart);
+    return true;
+  }
+
+  function visibleDialog() {
+    if (offer && !offer.hidden) return offer;
+    return cartIsOpen && cart && !cart.hidden ? cart : null;
+  }
+
+  function canFocus(element) {
+    return element && element.isConnected && !element.disabled &&
+      !element.closest('[hidden], [inert]') && element.getClientRects().length > 0;
+  }
+
+  function focusableElements(dialog) {
+    return Array.from(dialog.querySelectorAll(
+      'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), ' +
+      'textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter(canFocus);
+  }
+
+  function focusFirst(dialog) {
+    if (!dialog) return;
+    const first = focusableElements(dialog)[0];
+    (first || dialog).focus({ preventScroll: true });
+  }
+
+  function setBackgroundInert(inert) {
+    const elements = [ $('main'), $('.site-header'), $('footer'), mobileBuy ];
+    elements.filter(Boolean).forEach(element => {
+      if (inert) {
+        if (!backgroundState.has(element)) backgroundState.set(element, element.hasAttribute('inert'));
+        element.inert = true;
+        element.setAttribute('inert', '');
+      } else {
+        const wasInert = backgroundState.get(element) === true;
+        element.inert = wasInert;
+        if (!wasInert) element.removeAttribute('inert');
       }
     });
-  },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
-  revealItems.forEach(el=>observer.observe(el));
-}else{
-  revealItems.forEach(el=>el.classList.add('is-visible'));
-}
+    if (!inert) backgroundState.clear();
+  }
 
-/* Sticky header state */
-const header=$('.site-header');
-const setHeader=()=>header?.classList.toggle('scrolled',window.scrollY>40);
-setHeader();
-window.addEventListener('scroll',setHeader,{passive:true});
+  function updateMobileBuy() {
+    if (!mobileBuy) return;
+    const heroPassed = !hero || hero.getBoundingClientRect().bottom <= 0;
+    mobileBuy.hidden = !mobileQuery.matches || !heroPassed || purchaseInView ||
+      cartIsOpen || Boolean(offer && !offer.hidden) || Boolean(promo && !promo.hidden);
+    mobileBuy.classList.toggle('is-visible', !mobileBuy.hidden);
+  }
 
-/* Subtle product-image depth */
-if(window.matchMedia('(pointer:fine)').matches&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-  $$('[data-parallax]').forEach(frame=>{
-    const img=frame.querySelector('img');
-    if(!img)return;
-    frame.addEventListener('pointermove',e=>{
-      const r=frame.getBoundingClientRect();
-      const x=(e.clientX-r.left)/r.width-.5;
-      const y=(e.clientY-r.top)/r.height-.5;
-      img.style.transform=`scale(1.045) translate(${x*7}px,${y*7}px)`;
+  function hidePromo() {
+    if (promo) promo.hidden = true;
+    updateMobileBuy();
+  }
+
+  function showPromoToast() {
+    if (!promoReady || !promo || cartIsOpen || (offer && !offer.hidden) ||
+        sessionSeen('mnPromoSeen')) return;
+    markSessionSeen('mnPromoSeen');
+    promo.hidden = false;
+    updateMobileBuy();
+  }
+
+  function openCart() {
+    if (!cart) return;
+    if (!cartIsOpen) cartReturnFocus = document.activeElement;
+    cartIsOpen = true;
+    renderCart();
+    hidePromo();
+    setBackgroundInert(true);
+    document.body.classList.add('cart-open');
+    cart.hidden = false;
+    cart.inert = false;
+    cart.removeAttribute('inert');
+    cart.setAttribute('aria-hidden', 'false');
+    cart.setAttribute('aria-modal', 'true');
+    cart.classList.add('open');
+    if (overlay) overlay.hidden = false;
+    const cartOpenButton = $('#cartOpen');
+    if (cartOpenButton) cartOpenButton.setAttribute('aria-expanded', 'true');
+    focusFirst(cart);
+    updateMobileBuy();
+  }
+
+  function hideOffer(restoreFocus = true) {
+    if (!offer || offer.hidden) return;
+    offer.hidden = true;
+    offer.setAttribute('aria-hidden', 'true');
+    if (cart) {
+      cart.inert = false;
+      cart.removeAttribute('inert');
+      cart.setAttribute('aria-modal', 'true');
+    }
+    if (restoreFocus && cartIsOpen) {
+      if (canFocus(offerReturnFocus)) offerReturnFocus.focus({ preventScroll: true });
+      else focusFirst(cart);
+    }
+    offerReturnFocus = null;
+    updateMobileBuy();
+  }
+
+  function closeCart() {
+    cancelPendingOffer();
+    cartRevision += 1;
+    hideOffer(false);
+    if (!cartIsOpen) return;
+    cartIsOpen = false;
+    if (overlay) overlay.hidden = true;
+    if (cart) {
+      cart.hidden = true;
+      cart.classList.remove('open');
+      cart.setAttribute('aria-hidden', 'true');
+    }
+    document.body.classList.remove('cart-open');
+    setBackgroundInert(false);
+    const cartOpenButton = $('#cartOpen');
+    if (cartOpenButton) cartOpenButton.setAttribute('aria-expanded', 'false');
+    showPromoToast();
+    updateMobileBuy();
+    if (canFocus(cartReturnFocus)) cartReturnFocus.focus({ preventScroll: true });
+    else if (canFocus(cartOpenButton)) cartOpenButton.focus({ preventScroll: true });
+    cartReturnFocus = null;
+  }
+
+  function configureOffer(target) {
+    const extra = cartPrice(target) - cartPrice(cartQty);
+    text('#offerBadge', target === 2 ? 'PAIR & SAVE 15%' : 'BEST VALUE · SAVE 25%');
+    text('#offerTitle', target === 2 ? 'A little more room.' : 'Make room for everything.');
+    text('#offerText', 'Add one more shelf for ' + money(extra) +
+      ' more. Your ' + target + '-shelf bundle includes free shipping. This upgrade is optional.');
+    text('#offerWas', money(target * UNIT_CENTS) + ' bought separately');
+    text('#offerPrice', money(cartPrice(target)) + ' total');
+    const accept = $('#acceptOffer');
+    if (accept) {
+      accept.dataset.target = String(target);
+      accept.textContent = 'Add one shelf · +' + money(extra);
+    }
+  }
+
+  function schedulePostAddOffer() {
+    cancelPendingOffer();
+    if (!offer || !cartIsOpen || cartQty < 1 || cartQty > 2 || sessionSeen('mnPostAddOfferSeen')) return;
+    const scheduledRevision = cartRevision;
+    offerTimer = window.setTimeout(() => {
+      offerTimer = null;
+      if (!cartIsOpen || cartRevision !== scheduledRevision || cartQty < 1 || cartQty > 2 ||
+          sessionSeen('mnPostAddOfferSeen')) return;
+      configureOffer(cartQty + 1);
+      offerReturnFocus = document.activeElement;
+      markSessionSeen('mnPostAddOfferSeen');
+      offer.hidden = false;
+      offer.setAttribute('aria-hidden', 'false');
+      if (cart) {
+        cart.inert = true;
+        cart.setAttribute('inert', '');
+        cart.setAttribute('aria-modal', 'false');
+      }
+      focusFirst(offer);
+      updateMobileBuy();
+    }, 650);
+  }
+
+  function addSelected() {
+    const nextQuantity = cartQty + selected;
+    if (nextQuantity > MAX_QTY) {
+      openCart();
+      text('#checkoutStatus', 'Your cart can hold up to ' + MAX_QTY + ' shelves.');
+      return;
+    }
+    setCartQuantity(nextQuantity);
+    openCart();
+    const pill = $('#cartOpen');
+    if (pill && !reducedMotion.matches) {
+      pill.classList.remove('bump');
+      void pill.offsetWidth;
+      pill.classList.add('bump');
+    }
+    schedulePostAddOffer();
+  }
+
+  function upgradeCart() {
+    if (!cartIsOpen || (cartQty !== 1 && cartQty !== 2)) return;
+    setCartQuantity(cartQty + 1);
+  }
+
+  function scrollToShop() {
+    const shop = $('#shop');
+    if (shop) shop.scrollIntoView({
+      behavior: reducedMotion.matches ? 'auto' : 'smooth',
+      block: 'start'
     });
-    frame.addEventListener('pointerleave',()=>{img.style.transform=''});
+  }
+
+  $$('.bundle').forEach(button => button.addEventListener('click', () => chooseBundle(Number(button.dataset.qty))));
+  listen('#addToCart', 'click', addSelected);
+  listen('#mobileAdd', 'click', addSelected);
+  listen('#cartOpen', 'click', openCart);
+  listen('#cartClose', 'click', closeCart);
+  listen('#overlay', 'click', closeCart);
+  listen('#emptyShop', 'click', () => { closeCart(); scrollToShop(); });
+  listen('#minus', 'click', () => setCartQuantity(Math.max(0, cartQty - 1)));
+  listen('#plus', 'click', () => setCartQuantity(Math.min(MAX_QTY, cartQty + 1)));
+  listen('#cartRemove', 'click', () => setCartQuantity(0));
+  listen('#upsellButton', 'click', upgradeCart);
+  listen('#offerClose', 'click', () => hideOffer());
+  listen('#declineOffer', 'click', () => hideOffer());
+  listen('#acceptOffer', 'click', () => {
+    const target = Number($('#acceptOffer')?.dataset.target);
+    if (cartIsOpen && (cartQty === 1 || cartQty === 2) && target === cartQty + 1) upgradeCart();
+    hideOffer();
   });
-}
+  listen('#offerModal', 'click', event => {
+    if (event.target === offer) hideOffer();
+  });
+  listen('#promoClose', 'click', hidePromo);
+  listen('#promoShop', 'click', () => { hidePromo(); chooseBundle(2); scrollToShop(); });
+  listen('#checkoutButton', 'click', () => {
+    const url = cartQty > 0 ? checkoutUrl(cartQty) : null;
+    if (url) window.location.assign(url);
+    else renderCheckout();
+  });
 
+  document.addEventListener('keydown', event => {
+    const dialog = visibleDialog();
+    if (!dialog) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      if (offer && !offer.hidden) hideOffer();
+      else closeCart();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const focusable = focusableElements(dialog);
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (!first) {
+      event.preventDefault();
+      dialog.focus({ preventScroll: true });
+    } else if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+      event.preventDefault();
+      last.focus({ preventScroll: true });
+    } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+      event.preventDefault();
+      first.focus({ preventScroll: true });
+    }
+  });
+  document.addEventListener('focusin', event => {
+    const dialog = visibleDialog();
+    if (dialog && !dialog.contains(event.target)) focusFirst(dialog);
+  });
 
-/* Rotating truthful promo bar */
-const announcement=$('.announcement');
-const promoMessages=[
-  'FREE SHIPPING ON 2+ SHELVES • SAVE 15% ON 2',
-  'BEST VALUE: 3 SHELVES SAVE 25% • FREE SHIPPING',
-  '30-DAY SATISFACTION GUARANTEE • TOOL-FREE SETUP'
-];
-let promoMessageIndex=0;
-if(announcement&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-  setInterval(()=>{
-    promoMessageIndex=(promoMessageIndex+1)%promoMessages.length;
-    announcement.classList.add('changing');
-    setTimeout(()=>{
-      announcement.textContent=promoMessages[promoMessageIndex];
-      announcement.classList.remove('changing');
-    },180);
-  },4200);
-}
+  /* Keep gallery selection and image descriptions in sync, including quick clicks. */
+  const mainImage = $('#productMain');
+  const mainFrame = $('.product-main-frame');
+  $$('.gallery-thumb').forEach(button => {
+    button.setAttribute('aria-pressed', String(button.classList.contains('active')));
+    button.addEventListener('click', async () => {
+      const next = button.dataset.image;
+      if (!mainImage || !next || button.classList.contains('active')) return;
+      const revision = ++galleryRevision;
+      $$('.gallery-thumb').forEach(thumb => {
+        const active = thumb === button;
+        thumb.classList.toggle('active', active);
+        thumb.setAttribute('aria-pressed', String(active));
+      });
+      if (mainFrame && !reducedMotion.matches) mainFrame.classList.add('switching');
+      mainImage.src = next;
+      mainImage.alt = button.dataset.alt || button.getAttribute('aria-label') || 'MagnaNest magnetic shelf';
+      try { if (typeof mainImage.decode === 'function') await mainImage.decode(); } catch {}
+      if (revision === galleryRevision && mainFrame) mainFrame.classList.remove('switching');
+    });
+  });
 
-$('#year').textContent=new Date().getFullYear();
-chooseBundle(1);
-renderCart();
-setTimeout(showPromoToast,6500);
+  /* Content remains visible without JavaScript or motion support. */
+  const revealItems = $$('.reveal, .reveal-scale');
+  if ('IntersectionObserver' in window && !reducedMotion.matches) {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -3% 0px' });
+    revealItems.forEach(element => observer.observe(element));
+  } else {
+    revealItems.forEach(element => element.classList.add('is-visible'));
+  }
 
-requestAnimationFrame(()=>{
-  const hero=$('.hero-art');
-  hero?.classList.add('is-visible');
-});
+  const header = $('.site-header');
+  const updateScrollState = () => {
+    if (header) header.classList.toggle('scrolled', window.scrollY > 40);
+    if (!('IntersectionObserver' in window) && purchaseButton) {
+      const bounds = purchaseButton.getBoundingClientRect();
+      purchaseInView = bounds.bottom > 0 && bounds.top < window.innerHeight;
+    }
+    updateMobileBuy();
+  };
+  if (purchaseButton) {
+    const bounds = purchaseButton.getBoundingClientRect();
+    purchaseInView = bounds.bottom > 0 && bounds.top < window.innerHeight;
+    if ('IntersectionObserver' in window) {
+      const buyObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => { purchaseInView = entry.isIntersecting; });
+        updateMobileBuy();
+      });
+      buyObserver.observe(purchaseButton);
+      if (hero) {
+        const heroObserver = new IntersectionObserver(updateMobileBuy);
+        heroObserver.observe(hero);
+      }
+    }
+  }
+  window.addEventListener('scroll', updateScrollState, { passive: true });
+  window.addEventListener('resize', updateScrollState, { passive: true });
+  if (typeof mobileQuery.addEventListener === 'function') mobileQuery.addEventListener('change', updateMobileBuy);
+
+  if (window.matchMedia('(pointer: fine)').matches && !reducedMotion.matches) {
+    $$('[data-parallax]').forEach(frame => {
+      const image = frame.querySelector('img');
+      if (!image) return;
+      frame.addEventListener('pointermove', event => {
+        if (reducedMotion.matches) return;
+        const bounds = frame.getBoundingClientRect();
+        if (!bounds.width || !bounds.height) return;
+        const x = (event.clientX - bounds.left) / bounds.width - 0.5;
+        const y = (event.clientY - bounds.top) / bounds.height - 0.5;
+        image.style.transform = 'scale(1.025) translate(' + (x * 4) + 'px,' + (y * 4) + 'px)';
+      });
+      frame.addEventListener('pointerleave', () => { image.style.transform = ''; });
+    });
+  }
+
+  const announcement = $('.announcement');
+  const messages = [
+    'A little space. A better kitchen.',
+    '2 shelves · $42.42 · save 15% · free shipping',
+    '3 shelves · $56.14 · save 25% · free shipping'
+  ];
+  let messageIndex = 0;
+  if (announcement && !reducedMotion.matches) {
+    window.setInterval(() => {
+      if (document.hidden || reducedMotion.matches) return;
+      messageIndex = (messageIndex + 1) % messages.length;
+      announcement.textContent = messages[messageIndex];
+    }, 6000);
+  }
+
+  if (cart) {
+    cart.hidden = true;
+    cart.setAttribute('aria-hidden', 'true');
+    cart.setAttribute('role', 'dialog');
+    cart.setAttribute('tabindex', '-1');
+    if (!cart.hasAttribute('aria-labelledby')) cart.setAttribute('aria-label', 'Your shopping cart');
+  }
+  if (offer) {
+    offer.hidden = true;
+    offer.setAttribute('aria-hidden', 'true');
+    offer.setAttribute('tabindex', '-1');
+  }
+  if (overlay) overlay.hidden = true;
+  if (promo) promo.hidden = true;
+  text('#year', String(new Date().getFullYear()));
+  chooseBundle(selected);
+  persistQuantity(CART_KEY, cartQty);
+  renderCart();
+  updateScrollState();
+  window.setTimeout(() => {
+    promoReady = true;
+    showPromoToast();
+  }, 6500);
+  const heroArt = $('.hero-art');
+  if (heroArt) heroArt.classList.add('is-visible');
+  document.documentElement.classList.add('js');
+})();
