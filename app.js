@@ -2,6 +2,10 @@ const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 
 const bundles={1:24.95,2:42.42,3:56.14};
 let selected=1,cartQty=0;
+// Cart permalinks are prepared but disabled until MagnaNest can accept and fulfil orders.
+const SHOPIFY_CHECKOUT_READY=false;
+const SHOPIFY_STORE='q7tig2-se.myshopify.com';
+const SHOPIFY_BUNDLE_VARIANTS={1:'67662833746107',2:'67662833778875',3:'67662833811643'};
 const money=n=>'$'+n.toFixed(2);
 const sessionGet=k=>{try{return sessionStorage.getItem(k)}catch{return null}};
 const sessionSet=(k,v)=>{try{sessionStorage.setItem(k,v)}catch{}};
@@ -37,7 +41,7 @@ function renderUpsell(q){
   if(q===1){
     card.hidden=false;
     title.textContent='Upgrade to 2 shelves';
-    copy.textContent='Add one more for only $17.47 more, unlock free shipping, and save 15% versus buying separately.';
+    copy.textContent='Add one more for only $17.47 more and save 15% versus buying separately.';
     btn.hidden=false;
     btn.dataset.target='2';
     btn.textContent='Upgrade & save 15%';
@@ -73,9 +77,9 @@ function renderCart(){
   $('#subtotal').textContent=money(price);
   $('#cartBundleLabel').textContent=cartQty===1?'1 Shelf':cartQty+' Shelves';
 
-  const free=cartQty>=2;
-  $('#progress').style.width=free?'100%':'50%';
-  $('#shipMessage').textContent=free?'✓ Free shipping unlocked.':'Add one more shelf to unlock free shipping.';
+  const free=SHOPIFY_CHECKOUT_READY&&cartQty>=2;
+  $('#progress').style.width=free?'100%':'0%';
+  $('#shipMessage').textContent=SHOPIFY_CHECKOUT_READY?(free?'✓ Bundle shipping offer applied.':'Shipping calculated at checkout.'):'Shipping rates will be confirmed before orders open.';
 
   const savings=$('#cartSavings');
   if(saved>0){
@@ -112,15 +116,15 @@ function closeCart(){
 
 function configureOffer(target){
   if(target===2){
-    $('#offerBadge').textContent='FREE SHIPPING';
+    $('#offerBadge').textContent='BUNDLE SAVINGS';
     $('#offerTitle').textContent='Make it a pair and save 15%.';
-    $('#offerText').textContent='Add a second shelf before checkout and unlock the 2-pack bundle price plus free shipping.';
+    $('#offerText').textContent='Add a second shelf for the 2-pack bundle price. Shipping will be confirmed before orders open.';
     $('#offerWas').textContent='$49.90 regular';
     $('#offerPrice').textContent='$42.42 total';
   }else{
     $('#offerBadge').textContent='BEST VALUE';
     $('#offerTitle').textContent='Add a third and save 25%.';
-    $('#offerText').textContent='Upgrade to the 3-shelf bundle for the strongest per-shelf price and keep free shipping unlocked.';
+    $('#offerText').textContent='Upgrade to the 3-shelf bundle for the strongest per-shelf price. Shipping terms are not yet final.';
     $('#offerWas').textContent='$74.85 regular';
     $('#offerPrice').textContent='$56.14 total';
   }
@@ -269,9 +273,9 @@ if(window.matchMedia('(pointer:fine)').matches&&!window.matchMedia('(prefers-red
 /* Rotating truthful promo bar */
 const announcement=$('.announcement');
 const promoMessages=[
-  'FREE SHIPPING ON 2+ SHELVES • SAVE 15% ON 2',
-  'BEST VALUE: 3 SHELVES SAVE 25% • FREE SHIPPING',
-  '30-DAY SATISFACTION GUARANTEE • TOOL-FREE SETUP'
+  'PRE-LAUNCH: CHECKOUT OPENING AFTER VERIFICATION',
+  'BUNDLE SAVINGS: 15% ON 2 • 25% ON 3',
+  'MAGNETIC STORAGE FOR COMPATIBLE STEEL SURFACES'
 ];
 let promoMessageIndex=0;
 if(announcement&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
@@ -284,6 +288,25 @@ if(announcement&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches)
     },180);
   },4200);
 }
+
+/* Prepared Shopify cart permalink checkout. Disabled until the store can fulfil. */
+const checkoutControl=document.createElement('div');
+checkoutControl.className='magnanest-checkout-gate';
+checkoutControl.style.cssText='padding:12px 0 8px;display:grid;gap:10px;';
+checkoutControl.innerHTML='<button class="btn dark" type="button" id="mnShopifyCheckout" style="width:100%" disabled>Checkout available after launch</button><p style="font-size:12px;line-height:1.5;margin:0;opacity:.74">MagnaNest is confirming fulfilment, shipping and payments. No orders are being accepted here yet.</p>';
+$('#cartFilled').appendChild(checkoutControl);
+const checkoutButton=$('#mnShopifyCheckout');
+if(SHOPIFY_CHECKOUT_READY){
+  checkoutButton.disabled=false;
+  checkoutButton.textContent='Continue to secure Shopify checkout →';
+  checkoutControl.querySelector('p').textContent='The next step opens Shopify checkout in a secure browser page.';
+}
+checkoutButton.addEventListener('click',()=>{
+  if(!SHOPIFY_CHECKOUT_READY)return;
+  const variant=SHOPIFY_BUNDLE_VARIANTS[cartQty];
+  if(!variant)return;
+  window.location.assign('https://'+SHOPIFY_STORE+'/cart/'+variant+':1');
+});
 
 $('#year').textContent=new Date().getFullYear();
 chooseBundle(1);
