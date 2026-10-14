@@ -1,15 +1,9 @@
 # MagnaNest
 
-Single-product storefront for the MagnaNest Magnetic Refrigerator Storage Shelf.
+Cloudflare export of the live storefront at https://magnanest-store.netlify.app/ (Netlify deployment 6abedb69b74072c9764cfe00), with Stripe-hosted checkout for the Magnanest business account.
 
-## Offer
-- 1 shelf — $24.95
-- 2 shelves — $42.42 (15% off)
-- 3 shelves — $56.14 (25% off)
-- Free shipping on 2+ shelves
+Build: `node scripts/build-cloudflare.mjs`
 
-## Stack
-Static HTML, CSS and vanilla JavaScript. Built for Netlify with no build step.
+Publish directory: `dist`
 
-## Launch status
-The storefront, responsive layout, bundle selector, cart drawer, quantity controls, shipping progress and checkout preview are functional. Real payments stay disabled until Shopify checkout and automated fulfillment are connected.
+Prices are USD. Ships to Canada and the USA. See CLOUDFLARE.md for integration details and remaining account verification/fulfillment work.

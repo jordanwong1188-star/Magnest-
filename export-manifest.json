@@ -1,0 +1,22 @@
+{
+  "source": "https://magnanest-store.netlify.app/",
+  "deploy_id": "6abedb69b74072c9764cfe00",
+  "image_map": {
+    "/.netlify/images?url=%2Fassets%2Fmagnanest-empty-hd.png&w=1122&fit=contain&fm=webp&q=88": "assets/optimized/magnanest-empty-hd-1122.webp",
+    "/.netlify/images?url=%2Fassets%2Fmagnanest-empty-hd.png&w=360&fit=contain&fm=webp&q=88": "assets/optimized/magnanest-empty-hd-360.webp",
+    "/.netlify/images?url=%2Fassets%2Fmagnanest-empty-hd.png&w=720&fit=contain&fm=webp&q=88": "assets/optimized/magnanest-empty-hd-720.webp",
+    "/.netlify/images?url=%2Fassets%2Fmagnanest-front-hd.png&w=1122&fit=contain&fm=webp&q=88": "assets/optimized/magnanest-front-hd-1122.webp",
+    "/.netlify/images?url=%2Fassets%2Fmagnanest-front-hd.png&w=360&fit=contain&fm=webp&q=88": "assets/optimized/magnanest-front-hd-360.webp",
+    "/.netlify/images?url=%2Fassets%2Fmagnanest-front-hd.png&w=720&fit=contain&fm=webp&q=88": "assets/optimized/magnanest-front-hd-720.webp",
+    "/.netlify/images?url=%2Fassets%2Fmagnanest-lifestyle-hd.png&w=1122&fit=contain&fm=webp&q=88": "assets/optimized/magnanest-lifestyle-hd-1122.webp",
+    "/.netlify/images?url=%2Fassets%2Fmagnanest-lifestyle-hd.png&w=360&fit=contain&fm=webp&q=88": "assets/optimized/magnanest-lifestyle-hd-360.webp",
+    "/.netlify/images?url=%2Fassets%2Fmagnanest-lifestyle-hd.png&w=720&fit=contain&fm=webp&q=88": "assets/optimized/magnanest-lifestyle-hd-720.webp",
+    "/.netlify/images?url=%2Fassets%2Fmagnanest-side-hd.png&w=1122&fit=contain&fm=webp&q=88": "assets/optimized/magnanest-side-hd-1122.webp",
+    "/.netlify/images?url=%2Fassets%2Fmagnanest-side-hd.png&w=360&fit=contain&fm=webp&q=88": "assets/optimized/magnanest-side-hd-360.webp",
+    "/.netlify/images?url=%2Fassets%2Fmagnanest-side-hd.png&w=720&fit=contain&fm=webp&q=88": "assets/optimized/magnanest-side-hd-720.webp",
+    "/.netlify/images?url=%2Fassets%2Fmagnanest-studio-hd.png&w=1122&fit=contain&fm=webp&q=88": "assets/optimized/magnanest-studio-hd-1122.webp",
+    "/.netlify/images?url=%2Fassets%2Fmagnanest-studio-hd.png&w=360&fit=contain&fm=webp&q=88": "assets/optimized/magnanest-studio-hd-360.webp",
+    "/.netlify/images?url=%2Fassets%2Fmagnanest-studio-hd.png&w=720&fit=contain&fm=webp&q=88": "assets/optimized/magnanest-studio-hd-720.webp",
+    "https://magnanest-store.netlify.app/.netlify/images?url=%2Fassets%2Fmagnanest-lifestyle-hd.png&w=1122&fit=contain&fm=webp&q=88": "assets/optimized/magnanest-lifestyle-hd-1122.webp"
+  }
+}
