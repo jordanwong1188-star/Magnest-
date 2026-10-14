@@ -110,6 +110,9 @@
       </div>
       <div class="subtotal"><span>Subtotal</span><strong id="subtotal">$24.95</strong></div>
       <p class="tax-note">Bundle pricing updates automatically as you change quantity.</p>
+      <button class="btn lime checkout-button" id="checkoutButton" type="button" disabled aria-describedby="checkoutStatus">Checkout <span aria-hidden="true">→</span></button>
+      <p class="stripe-credit" id="stripeCredit" hidden>Powered by <strong>Stripe</strong></p>
+      <p class="checkout-status" id="checkoutStatus" role="status" aria-live="polite">Loading checkout…</p>
     </div></aside>
   <div class="offer-modal" id="offerModal" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="offerTitle">
     <div class="offer-card">

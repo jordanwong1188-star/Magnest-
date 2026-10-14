@@ -58,6 +58,7 @@ function renderUpsell(q){
 }
 
 function renderCart(){
+  updateCheckout();
   const has=cartQty>0;
   $('#cartEmpty').hidden=has;
   $('#cartFilled').hidden=!has;
@@ -284,6 +285,38 @@ if(announcement&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches)
     },180);
   },4200);
 }
+
+
+/* Stripe-hosted checkout: each bundle has its own verified Payment Link. */
+let checkoutLinks={};
+let checkoutLoading=true;
+function validCheckoutLink(value){
+  try{
+    const url=new URL(value);
+    return url.protocol==='https:'&&url.hostname==='buy.stripe.com'&&!url.port&&!url.username&&!url.password&&url.pathname.length>1?url.href:null;
+  }catch{return null}
+}
+function updateCheckout(){
+  const link=validCheckoutLink(checkoutLinks[cartQty]);
+  $('#checkoutButton').disabled=checkoutLoading||!link||cartQty<1;
+  $('#checkoutStatus').textContent=checkoutLoading?'Loading checkout…':link?'Review shipping and your total on Stripe.':'Checkout is not available yet. Please check back soon.';
+  $('#stripeCredit').hidden=!link;
+}
+async function loadCheckout(){
+  try{
+    const response=await fetch('checkout-config.json',{cache:'no-store'});
+    if(!response.ok)throw new Error('Checkout configuration unavailable');
+    const config=await response.json();
+    checkoutLinks=config?.paymentLinks||{};
+  }catch{checkoutLinks={}}
+  finally{checkoutLoading=false;updateCheckout()}
+}
+$('#checkoutButton').addEventListener('click',()=>{
+  const link=validCheckoutLink(checkoutLinks[cartQty]);
+  if(!link||checkoutLoading||cartQty<1){updateCheckout();return}
+  window.location.assign(link);
+});
+loadCheckout();
 
 $('#year').textContent=new Date().getFullYear();
 chooseBundle(1);
