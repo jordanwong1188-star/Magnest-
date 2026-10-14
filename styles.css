@@ -163,3 +163,11 @@ details[open] summary span{transform:rotate(45deg);color:var(--accent)}
 /* Promo bar transition */
 .announcement{transition:opacity .18s ease,transform .18s ease}
 .announcement.changing{opacity:.25;transform:translateY(-2px)}
+
+/* Cart checkout */
+.checkout-button{width:100%;justify-content:space-between;margin-top:12px}
+.checkout-button:disabled{opacity:.55;cursor:not-allowed}
+.checkout-button:focus-visible{outline:3px solid #172019;outline-offset:3px}
+.stripe-credit{text-align:center;font-size:12px;margin:12px 0 0;color:#626b62}
+.stripe-credit strong{font-size:17px;color:#635bff}
+.checkout-status{font-size:12px;line-height:1.5;text-align:center;color:#626b62;margin:9px 0 16px}
