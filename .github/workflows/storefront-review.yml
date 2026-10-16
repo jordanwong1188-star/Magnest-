@@ -1,0 +1,46 @@
+name: Storefront browser review
+on:
+  push:
+    branches:
+      - magnanest-rebuild-review
+    paths-ignore:
+      - 'review/**'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: magnanest-storefront-review
+  cancel-in-progress: true
+jobs:
+  browser-review:
+    if: github.ref == 'refs/heads/magnanest-rebuild-review'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: magnanest-rebuild-review
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test dependencies
+        run: |
+          npm install --no-save --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Build Cloudflare upload
+        run: node scripts/build-cloudflare.mjs
+      - name: Review rendered storefront
+        run: node tools/browser-check.mjs
+      - name: Inspect current Cloudflare deployment
+        if: always()
+        run: node tools/probe-live.mjs
+      - name: Record screenshots and browser results
+        if: always()
+        run: |
+          if [ ! -d review ]; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add review
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "[skip ci] Record browser review"
+          git push origin HEAD:magnanest-rebuild-review
