@@ -76,6 +76,11 @@
     return Math.round(quantity * UNIT_CENTS * 0.75);
   }
 
+  function orderTotalCents(quantity) {
+    const subtotal = cartPrice(quantity);
+    return subtotal + (quantity === 1 ? Math.round(subtotal * 0.12) : 0);
+  }
+
   function checkoutUrl(quantity) {
     if (!validQuantity(quantity, 1, MAX_QTY)) return null;
     const config = window.MAGNANEST_CHECKOUT;
@@ -85,7 +90,7 @@
     if (typeof value !== 'string' || !value.trim()) return null;
     try {
       const url = new URL(value);
-      if (url.protocol !== 'https:' || !url.hostname || url.username || url.password) return null;
+      if (url.protocol !== 'https:' || url.hostname !== 'buy.stripe.com' || url.port || url.username || url.password) return null;
       return url.href;
     } catch {
       return null;
@@ -110,17 +115,19 @@
       button.disabled = !enabled;
       button.setAttribute('aria-disabled', String(!enabled));
     }
+    const stripeCredit = $('#stripeCredit');
+    if (stripeCredit) stripeCredit.hidden = !enabled;
     const availableQuantities = checkoutQuantities();
     const available = availableQuantities.length > 0;
     text('#checkoutStatus', enabled
-      ? 'Shipping and taxes are confirmed at checkout.'
+      ? 'Secure Stripe checkout. Ships to Canada and the USA. Prices in USD.'
       : available
         ? 'Please choose ' + checkoutQuantityDescription(availableQuantities) + ' to continue to checkout.'
         : persistenceAvailable
           ? 'Online ordering opens soon. Your selection is saved on this device.'
           : 'Online ordering opens soon. Your selection is kept for this visit.');
     text('#productAvailability', available
-      ? 'Choose your setup. Shipping and taxes are confirmed at checkout.'
+      ? 'Choose your setup. Prices in USD. Shipping to Canada and the USA.'
       : persistenceAvailable
         ? 'Online ordering opens soon. You can explore bundles and save your selection on this device.'
         : 'Online ordering opens soon. You can explore bundles during this visit.');
@@ -150,7 +157,7 @@
     card.classList.toggle('unlocked', cartQty >= 3);
     if (cartQty === 1 || cartQty === 2) {
       const target = cartQty + 1;
-      const extra = money(cartPrice(target) - cartPrice(cartQty));
+      const extra = money(orderTotalCents(target) - orderTotalCents(cartQty));
       const percentage = target === 2 ? '15%' : '25%';
       text('#upsellTitle', target === 2 ? 'Make it a pair.' : 'Complete your setup.');
       text('#upsellCopy', 'Add one more shelf for ' + extra + ' more. Your ' + target +
@@ -183,6 +190,10 @@
     text('#cartQty', String(cartQty));
     text('#itemPrice', money(price));
     text('#subtotal', money(price));
+    const shipping = cartQty === 1 ? Math.round(price * 0.12) : 0;
+    text('#shippingLabel', cartQty === 1 ? 'Shipping (12%)' : 'Shipping');
+    text('#shippingCost', shipping ? money(shipping) : 'Free');
+    text('#orderTotal', money(price + shipping));
     text('#cartBundleLabel', cartQty + (cartQty === 1 ? ' Shelf' : ' Shelves'));
     text('#cartUnitPrice', cartQty ? money(Math.round(price / cartQty)) + ' per shelf' : '');
     const progress = $('#progress');
@@ -343,7 +354,7 @@
   }
 
   function configureOffer(target) {
-    const extra = cartPrice(target) - cartPrice(cartQty);
+    const extra = orderTotalCents(target) - orderTotalCents(cartQty);
     text('#offerBadge', target === 2 ? 'PAIR & SAVE 15%' : 'BEST VALUE · SAVE 25%');
     text('#offerTitle', target === 2 ? 'A little more room.' : 'Make room for everything.');
     text('#offerText', 'Add one more shelf for ' + money(extra) +

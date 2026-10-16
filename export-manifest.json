@@ -1,0 +1,113 @@
+{
+  "rebuilt": "2026-10-16",
+  "site": "https://magnanest.pages.dev",
+  "source": "AI-assisted photography based on original MagnaNest product",
+  "imageDelivery": "Local responsive JPEG; no provider CDN dependency",
+  "images": [
+    {
+      "path": "assets/editorial-kitchen-360.jpg",
+      "width": 360,
+      "height": 450,
+      "bytes": 45762,
+      "sha": "0abb3952f1b3c0814ca30bcf00c1e57f4b0bac0b"
+    },
+    {
+      "path": "assets/editorial-kitchen-720.jpg",
+      "width": 720,
+      "height": 900,
+      "bytes": 140796,
+      "sha": "e89ee2e58c82becfcbcc690842b1cfe50daa00e2"
+    },
+    {
+      "path": "assets/editorial-kitchen-1122.jpg",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 314132,
+      "sha": "0cf165147d3407044ef88d43d8330c1d6d193a59"
+    },
+    {
+      "path": "assets/product-studio-360.jpg",
+      "width": 360,
+      "height": 450,
+      "bytes": 17355,
+      "sha": "2bb75cec18a0e0be1007ee0cd1d8bac31c24a731"
+    },
+    {
+      "path": "assets/product-studio-720.jpg",
+      "width": 720,
+      "height": 900,
+      "bytes": 54620,
+      "sha": "e6b93666c16c473b31fe9d78e4b7e76c7bc785b3"
+    },
+    {
+      "path": "assets/product-studio-1122.jpg",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 143724,
+      "sha": "92923f418104501410c8441fd3df5ae748330ef0"
+    },
+    {
+      "path": "assets/product-front-360.jpg",
+      "width": 360,
+      "height": 450,
+      "bytes": 13625,
+      "sha": "eb2f9130650d027e7cbc24654491a2db168887e3"
+    },
+    {
+      "path": "assets/product-front-720.jpg",
+      "width": 720,
+      "height": 900,
+      "bytes": 46347,
+      "sha": "03f76bf5eeacc924f680b5bc545b5c7261205ae3"
+    },
+    {
+      "path": "assets/product-front-1122.jpg",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 125034,
+      "sha": "a1a1642dd0a2296514c49d7669aefb14b345164a"
+    },
+    {
+      "path": "assets/product-detail-360.jpg",
+      "width": 360,
+      "height": 450,
+      "bytes": 22663,
+      "sha": "37ad775b7b83b0d98e97cbbda965e0737f971620"
+    },
+    {
+      "path": "assets/product-detail-720.jpg",
+      "width": 720,
+      "height": 900,
+      "bytes": 81134,
+      "sha": "32b01d3559c5cdcda489202df99de91f0682dec0"
+    },
+    {
+      "path": "assets/product-detail-1122.jpg",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 213279,
+      "sha": "17c8e3327345cff6e3eb9b9df026999880207762"
+    },
+    {
+      "path": "assets/editorial-coffee-360.jpg",
+      "width": 360,
+      "height": 450,
+      "bytes": 45122,
+      "sha": "f2913b00c8316ca8fb0a069999b1137a38193ca9"
+    },
+    {
+      "path": "assets/editorial-coffee-720.jpg",
+      "width": 720,
+      "height": 900,
+      "bytes": 138198,
+      "sha": "327d6c1ba109987239b0d1ed37a8310edaad296f"
+    },
+    {
+      "path": "assets/editorial-coffee-1122.jpg",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 306354,
+      "sha": "e48b651193373fe33ffbda4c3da56377c06c401b"
+    }
+  ]
+}

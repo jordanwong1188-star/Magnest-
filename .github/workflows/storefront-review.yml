@@ -27,8 +27,13 @@ jobs:
         run: |
           npm install --no-save --ignore-scripts playwright@1.56.1
           npx playwright install --with-deps chromium
+      - name: Build Cloudflare upload
+        run: node scripts/build-cloudflare.mjs
       - name: Review rendered storefront
         run: node tools/browser-check.mjs
+      - name: Inspect current Cloudflare deployment
+        if: always()
+        run: node tools/probe-live.mjs
       - name: Record screenshots and browser results
         if: always()
         run: |

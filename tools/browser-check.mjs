@@ -4,8 +4,9 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
-const root = process.cwd();
-const review = path.join(root, 'review');
+const repositoryRoot = process.cwd();
+const root = path.join(repositoryRoot, 'dist');
+const review = path.join(repositoryRoot, 'review');
 await mkdir(review, { recursive: true });
 const result = {
   testedAt: new Date().toISOString(),
@@ -99,6 +100,13 @@ async function saveScreenshot(page, file, fullPage) {
     if ((await stat(file)).size < 950000) break;
   }
 }
+async function saveSectionScreenshot(page, selector, file) {
+  const section = page.locator(selector);
+  for (const quality of [70, 55, 40, 28]) {
+    await section.screenshot({ path: file, type: 'jpeg', quality });
+    if ((await stat(file)).size < 950000) break;
+  }
+}
 async function scrollPage(page) {
   const height = await page.evaluate(() => document.documentElement.scrollHeight);
   for (let top = 0; top < height; top += 650) {
@@ -140,6 +148,38 @@ try {
       assert(dimensions.scroll <= dimensions.viewport + 1, JSON.stringify(dimensions));
       return dimensions;
     });
+    await check(width + 'px product photograph aspect ratios', async () => {
+      const thumbnails = await page.locator('.gallery-thumb img').evaluateAll(images =>
+        images.map(image => {
+          const bounds = image.getBoundingClientRect();
+          return { width: bounds.width, height: bounds.height, source: image.currentSrc };
+        })
+      );
+      for (const image of thumbnails) {
+        assert(Math.abs(image.width - image.height) <= 1, 'Thumbnail must be square: ' + JSON.stringify(image));
+      }
+      const storyImages = await page.locator('.photo-card img').evaluateAll(images =>
+        images.map(image => {
+          const bounds = image.getBoundingClientRect();
+          return { width: bounds.width, height: bounds.height, source: image.currentSrc };
+        })
+      );
+      for (const image of storyImages) {
+        assert(Math.abs(image.width / image.height - 0.8) <= 0.01,
+          'Editorial photograph must use a 4:5 frame: ' + JSON.stringify(image));
+      }
+      return { thumbnails, storyImages };
+    });
+    if (width === 390 || width === 1440) {
+      await check(width + 'px section screenshots', async () => {
+        for (const [selector, name] of [['.hero', 'hero'], ['#shop', 'shop'], ['.visual-story', 'story']]) {
+          await closePromotions(page);
+          const file = 'review/' + name + '-' + width + '.jpg';
+          await saveSectionScreenshot(page, selector, file);
+          result.screenshots.push(file);
+        }
+      });
+    }
     await check(width + 'px product gallery and all five enlarged images', async () => {
       const thumbs = page.locator('.gallery-thumb');
       assert.equal(await thumbs.count(), 5);
@@ -166,17 +206,37 @@ try {
     });
     await context.close();
   }
-  for (const [quantity, expected] of [[1, '$24.95'], [2, '$42.42'], [3, '$56.14']]) {
+  const expectedBundles = {
+    1: { subtotal: '$24.95', shipping: '$2.99', total: '$27.94' },
+    2: { subtotal: '$42.42', shipping: 'Free', total: '$42.42' },
+    3: { subtotal: '$56.14', shipping: 'Free', total: '$56.14' }
+  };
+  for (let quantity = 1; quantity <= 12; quantity++) {
     const { context, page } = await contextPage(390, 'bundle-' + quantity);
-    await check(quantity + '-shelf bundle cart price and unavailable checkout', async () => {
-      await page.locator('.bundle[data-qty="' + quantity + '"]').click();
-      assert.equal(await page.locator('#buttonPrice').textContent(), expected);
+    await check(quantity + '-shelf cart and correct Stripe checkout destination', async () => {
+      const selected = Math.min(quantity, 3);
+      const expected = expectedBundles[quantity];
+      await page.locator('.bundle[data-qty="' + selected + '"]').click();
+      if (expected) assert.equal(await page.locator('#buttonPrice').textContent(), expected.subtotal);
       await page.locator('#addToCart').click();
       assert(await page.locator('#cartDrawer').isVisible());
-      assert.equal((await page.locator('#subtotal').textContent()).trim(), expected);
+      for (let count = selected; count < quantity; count++) await page.locator('#plus').click();
       assert.equal((await page.locator('#cartQty').textContent()).trim(), String(quantity));
-      assert(await page.locator('#checkoutButton').isDisabled());
-      assert.match(await page.locator('#checkoutStatus').textContent(), /opens soon|being prepared|not available|unavailable/i);
+      if (expected) {
+        assert.equal((await page.locator('#subtotal').textContent()).trim(), expected.subtotal);
+        assert.equal((await page.locator('#shippingCost').textContent()).trim(), expected.shipping);
+        assert.equal((await page.locator('#orderTotal').textContent()).trim(), expected.total);
+      }
+      assert(await page.locator('#checkoutButton').isEnabled());
+      assert(await page.locator('#stripeCredit').isVisible());
+      assert.match(await page.locator('#checkoutStatus').textContent(), /Stripe/);
+      if (quantity < 3) {
+        await page.waitForTimeout(750);
+        assert(await page.locator('#offerModal').isVisible(), 'Optional post-add bundle offer should appear');
+        await page.locator('#offerClose').click();
+        assert(await page.locator('#cartDrawer').isVisible());
+        assert.equal((await page.locator('#cartQty').textContent()).trim(), String(quantity));
+      }
       if (quantity === 2) {
         const file = 'review/cart-390.jpg';
         await saveScreenshot(page, file, false);
@@ -190,7 +250,27 @@ try {
       await page.locator('#cartClose').click();
       assert(!(await page.locator('#cartDrawer').isVisible()));
       assert(await page.locator('#cartOpen').evaluate(element => element === document.activeElement));
-      return { quantity, subtotal: expected, checkoutDisabled: true };
+      await page.locator('#cartOpen').click();
+      const expectedUrl = await page.evaluate(quantity => window.MAGNANEST_CHECKOUT.urls[quantity], quantity);
+      const destination = new URL(expectedUrl);
+      assert.equal(destination.protocol, 'https:');
+      assert.equal(destination.hostname, 'buy.stripe.com');
+      let interceptedUrl = null;
+      await page.route('https://buy.stripe.com/**', async route => {
+        interceptedUrl = route.request().url();
+        await route.fulfill({
+          status: 200,
+          contentType: 'text/html; charset=utf-8',
+          body: '<!doctype html><title>Checkout navigation safely intercepted</title><p>Browser review only. No Stripe request or payment was made.</p>'
+        });
+      });
+      await Promise.all([
+        page.waitForURL(url => url.href === expectedUrl),
+        page.locator('#checkoutButton').click()
+      ]);
+      assert.equal(page.url(), expectedUrl);
+      assert.equal(interceptedUrl, expectedUrl);
+      return { quantity, ...(expected || {}), checkoutEnabled: true, destination: expectedUrl, stripeNetworkIntercepted: true };
     });
     await context.close();
   }
