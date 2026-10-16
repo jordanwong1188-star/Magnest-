@@ -1,57 +1,74 @@
-# MagnaNest
+# MagnaNest — Your counter. Cleared.
 
-A product-focused static storefront for the MagnaNest Magnetic Refrigerator Storage Shelf.
+A complete storefront rebuild for https://magnanest.pages.dev, prepared 16 October 2026.
 
-## Current offers
+## What changed
 
+- A clear ivory, moss and citrus visual system with Manrope typography and restrained Lora headline emphasis.
+- Product and bundle selection immediately after the hero, plus lifestyle storytelling, compatibility guidance and useful FAQs.
+- Five newly generated product images based on the original MagnaNest shelf, with native 1122 × 1402 pixel detail and portable 360/720/1122 JPEG versions. All 15 responsive files total about 1.7 MB. No Netlify-only image endpoints.
+- A product zoom dialog, gentle scroll reveals, reduced-motion support, keyboard navigation, and larger readable mobile text.
+- Existing browsing promotion and voluntary bundle upgrade, persistent shopping bag, cumulative quantities, mobile buy control and integer-cent prices retained.
+- Static shipping/returns and privacy information accurately describe the current prelaunch status. No invented reviews, customer counts or scarcity claims.
+
+## Publish to the existing Cloudflare Pages project
+
+The folder containing `index.html` is already the finished website. No install or build command is required.
+
+### Existing Direct Upload project
+
+1. Download this branch ZIP and extract it.
+2. Open https://dash.cloudflare.com, select Workers & Pages, then the existing `magnanest` Pages project.
+3. Choose Create deployment and the production environment.
+4. Upload the complete extracted folder containing `index.html`, `styles.css`, `app.js`, `checkout-config.js` and `assets/`.
+5. Open the resulting deployment and check desktop/mobile images, all bundle selections, bag, zoom, promotions, policy links and the current ordering status.
+
+### Existing Git-integrated project
+
+Cloudflare does not offer dashboard drag-and-drop for existing Git-integrated Pages projects. Keep its Git connection and deploy this branch, or use an authenticated Wrangler CLI.
+
+For this source tree, the production branch is `magnanest-store-redesign`, framework is None, build command can be `exit 0`, and the output directory is `.` (the folder containing `index.html`). The existing project must be configured to use the correct repository/branch. A GitHub source commit alone is not proof that Cloudflare has published it.
+
+From the extracted folder, an authenticated CLI can deploy to the existing project:
+
+```sh
+npx wrangler pages deploy . --project-name magnanest
+```
+
+Confirm the project name against your Cloudflare dashboard before using the command. Do not delete the current project or change DNS just to upload these files.
+
+Official guides:
+- https://developers.cloudflare.com/pages/get-started/direct-upload/
+- https://developers.cloudflare.com/pages/get-started/git-integration/
+- https://developers.cloudflare.com/pages/framework-guides/deploy-anything/
+
+Cloudflare account access is not connected in this chat; the rebuilt source is prepared for publishing, and live publication must be verified separately.
+
+## Offers and checkout
+
+All displayed prices are USD:
 - 1 shelf: $24.95
-- 2 shelves: $42.42 (15% savings; $7.48 less than two singles)
-- 3 shelves: $56.14 (25% savings; $18.71 less than three singles)
+- 2 shelves: $42.42, saving $7.48 versus two singles
+- 3 shelves: $56.14, saving $18.71 versus three singles
 - Free shipping on 2+ shelves
-- The existing 30-day guarantee remains in the page.
+- For cart quantities above three, the existing 25% calculation is retained, capped at 12 shelves.
 
-## Website
+`checkout-config.js` remains intentionally unconfigured. The storefront truthfully states that online ordering is being prepared; it does not collect payments. Add verified HTTPS checkout URLs only after the provider applies the exact quantity, total, taxes and shipping offer. Every allowed cart quantity needs a matching checkout destination, or the cart limit must be changed consistently. Never put credentials or API keys in that public file.
 
-HTML, CSS and vanilla JavaScript, with no build step. Publish the repository root on Netlify.
+Before enabling checkout:
+- Connect payment/order management and supplier fulfillment.
+- Approve the exact supplier shelf and test shipments to Canada and the US.
+- Verify every advertised quantity and discount at payment and fulfillment.
+- Confirm delivery estimates, import-charge responsibility, support contact, return address and full guarantee conditions.
+- Replace the prelaunch shipping/returns and privacy wording with the actual operating terms, and update the “Can I order today?” FAQ.
+- Test a real order, tracking notification and refund before paid advertising.
 
-The redesign puts the product and bundle selection directly after the hero. It retains the browsing promotion and optional post-add bundle promotion, adds persistent cart state, and improves keyboard use and mobile buying controls.
+## Photography
 
-## Product imagery
+Images were generated/edited with AI using the original product reference. They retain the same two-flat-rail shelf design but are not supplier sample verification. Obtain an actual sample and manufacturer-authorized photos before relying on dimensions or load-capacity claims. Props shown in lifestyle images are not included.
 
-The five `assets/magnanest-*-hd.png` files are AI-assisted clarity enhancements of the supplied product photos, at 1122 × 1402 pixels. The page requests responsive 360, 720 and 1122 pixel WebP versions through Netlify Image CDN instead of downloading full PNGs for every visitor.
+Original valid WebP images remain as fallbacks. PNG generation masters are omitted from this deployment to keep the upload light. JPEG conversion/downsampling uses UPNG.js and jpeg-js; notices are in `IMAGE-TOOL-LICENSES.txt`.
 
-Original valid product photos remain as small thumbnails and fallbacks. Product photos 1–3 have been restored from the intact supplied originals; the previous first image was incomplete. Gallery JavaScript resets image candidates and fallback state when selecting a different view. The main gallery uses a 4:5 frame with `object-fit: contain` to show the whole product.
+## Verification
 
-Netlify Image CDN requires a Netlify deployment. Opening `index.html` directly uses the original-photo fallback after a CDN request fails. No remote image allowlist or API keys are needed.
-
-## Payments
-
-Real checkout is intentionally unavailable until payment and fulfillment are connected. The storefront displays that status. No card information is collected by this site.
-
-Fill the public URLs in `checkout-config.js` only after verifying that each destination contains the exact quantity, price, taxes and shipping offer shown here. Never put API keys or credentials in this public file. Prices and offers must be applied by the checkout provider; this static page cannot enforce them.
-
-## Existing Netlify project
-
-Site: https://magnanest-store.netlify.app
-Project ID: a387f3eb-6fa6-46de-a54e-792d352a2f1d
-
-The currently live deployment was uploaded directly; editing this repository alone does not publish changes to it.
-
-To deploy the redesigned files without changing the existing project:
-
-1. Download this branch's source ZIP from GitHub and extract it.
-2. In the existing Netlify project's Deploys page, upload the extracted folder that contains `index.html` (including `styles.css`, `app.js`, `checkout-config.js`, and `assets/`).
-3. Verify the product gallery, bundle selection, bag, browsing promotion and optional upgrade on mobile and desktop.
-4. Connect checkout and verify a real end-to-end order before sending purchase traffic.
-
-Alternatively, with an authenticated Netlify CLI, run from the extracted repository root:
-
-```sh
-npx netlify deploy --site a387f3eb-6fa6-46de-a54e-792d352a2f1d --dir .
-```
-
-Review the returned preview, then publish to the same project:
-
-```sh
-npx netlify deploy --prod --site a387f3eb-6fa6-46de-a54e-792d352a2f1d --dir .
-```
+UI/logic and HTML contract checks cover bundle totals, cart persistence, optional promotions, portable image candidates, zoom focus trapping, Escape, background inertness and reduced motion. Independent source review checks markup and style integration. Any automated browser results are recorded separately when GitHub Actions permissions allow the review workflow to run.

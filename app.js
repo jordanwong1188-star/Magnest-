@@ -14,6 +14,7 @@
   const overlay = $('#overlay');
   const offer = $('#offerModal');
   const promo = $('#promoToast');
+  const zoom = $('#imageZoom');
   const mobileBuy = $('.mobile-buy');
   const purchaseButton = $('#addToCart');
   const hero = $('.hero');
@@ -25,6 +26,8 @@
   let promoReady = false;
   let purchaseInView = false;
   let galleryRevision = 0;
+  let zoomRevision = 0;
+  let zoomReturnFocus = null;
   const backgroundState = new Map();
   let persistenceAvailable = true;
 
@@ -214,6 +217,7 @@
   }
 
   function visibleDialog() {
+    if (zoom && !zoom.hidden) return zoom;
     if (offer && !offer.hidden) return offer;
     return cartIsOpen && cart && !cart.hidden ? cart : null;
   }
@@ -237,7 +241,8 @@
   }
 
   function setBackgroundInert(inert) {
-    const elements = [ $('main'), $('.site-header'), $('footer'), mobileBuy ];
+    const elements = [ $('main'), $('.site-header'), $('footer'), mobileBuy,
+      $('.announcement'), $('.skip-link') ];
     elements.filter(Boolean).forEach(element => {
       if (inert) {
         if (!backgroundState.has(element)) backgroundState.set(element, element.hasAttribute('inert'));
@@ -256,7 +261,8 @@
     if (!mobileBuy) return;
     const heroPassed = !hero || hero.getBoundingClientRect().bottom <= 0;
     mobileBuy.hidden = !mobileQuery.matches || !heroPassed || purchaseInView ||
-      cartIsOpen || Boolean(offer && !offer.hidden) || Boolean(promo && !promo.hidden);
+      cartIsOpen || Boolean(offer && !offer.hidden) || Boolean(zoom && !zoom.hidden) ||
+      Boolean(promo && !promo.hidden);
     mobileBuy.classList.toggle('is-visible', !mobileBuy.hidden);
   }
 
@@ -266,7 +272,7 @@
   }
 
   function showPromoToast() {
-    if (!promoReady || !promo || cartIsOpen || (offer && !offer.hidden) ||
+    if (!promoReady || !promo || cartIsOpen || (offer && !offer.hidden) || (zoom && !zoom.hidden) ||
         sessionSeen('mnPromoSeen')) return;
     markSessionSeen('mnPromoSeen');
     promo.hidden = false;
@@ -275,7 +281,9 @@
 
   function openCart() {
     if (!cart) return;
-    if (!cartIsOpen) cartReturnFocus = document.activeElement;
+    const openingFocus = zoom && !zoom.hidden ? zoomReturnFocus : document.activeElement;
+    if (zoom && !zoom.hidden) closeZoom(false, false);
+    if (!cartIsOpen) cartReturnFocus = openingFocus;
     cartIsOpen = true;
     renderCart();
     hidePromo();
@@ -437,7 +445,8 @@
     if (!dialog) return;
     if (event.key === 'Escape') {
       event.preventDefault();
-      if (offer && !offer.hidden) hideOffer();
+      if (zoom && !zoom.hidden) closeZoom();
+      else if (offer && !offer.hidden) hideOffer();
       else closeCart();
       return;
     }
@@ -457,6 +466,8 @@
     }
   });
   document.addEventListener('focusin', event => {
+    const revealed = event.target.closest('.reveal, .reveal-scale');
+    if (revealed) revealed.classList.add('is-visible');
     const dialog = visibleDialog();
     if (dialog && !dialog.contains(event.target)) focusFirst(dialog);
   });
@@ -464,13 +475,15 @@
   /* Keep responsive sources, fallbacks and descriptions aligned with the selected view. */
   const mainImage = $('#productMain');
   const mainFrame = $('.product-main-frame');
+  const zoomImage = $('#zoomImage');
+  const zoomTrigger = $('#galleryZoom');
   const imageFallbackState = new WeakMap();
 
   function resolveImageSource(source) {
     try { return new URL(source, document.baseURI).href; } catch { return source; }
   }
 
-  function recoverCdnImage(image) {
+  function recoverImage(image) {
     const state = imageFallbackState.get(image);
     const fallback = image.dataset.fallback;
     if (!state || state.used || !fallback) return;
@@ -487,11 +500,14 @@
     image.src = fallback;
   }
 
-  $$('.cdn-image').forEach(image => {
+  const fallbackImages = new Set($$('img[data-fallback], .cdn-image'));
+  if (mainImage) fallbackImages.add(mainImage);
+  if (zoomImage) fallbackImages.add(zoomImage);
+  fallbackImages.forEach(image => {
     imageFallbackState.set(image, { used: false });
-    image.addEventListener('error', () => recoverCdnImage(image));
-    /* A deferred script may attach after the initial CDN request has already failed. */
-    if (image.complete && image.naturalWidth === 0) recoverCdnImage(image);
+    image.addEventListener('error', () => recoverImage(image));
+    /* A deferred script may attach after the initial image request has already failed. */
+    if (image.complete && image.naturalWidth === 0) recoverImage(image);
   });
 
   $$('.gallery-thumb').forEach(button => {
@@ -507,6 +523,8 @@
       });
       if (mainFrame && !reducedMotion.matches) mainFrame.classList.add('switching');
       imageFallbackState.set(mainImage, { used: false });
+      if (button.dataset.highres) mainImage.dataset.highres = button.dataset.highres;
+      else delete mainImage.dataset.highres;
       if (button.dataset.fallback) mainImage.dataset.fallback = button.dataset.fallback;
       else delete mainImage.dataset.fallback;
       if (button.dataset.sizes) mainImage.setAttribute('sizes', button.dataset.sizes);
@@ -520,19 +538,89 @@
     });
   });
 
-  /* Content remains visible without JavaScript or motion support. */
+  /* Inspect the selected product view without losing the shopper's place. */
+  async function openZoom() {
+    if (!zoom || !zoomImage || !zoomTrigger || !$('#zoomClose') || !mainImage ||
+        cartIsOpen || (offer && !offer.hidden) || !zoom.hidden) return;
+    const selectedView = $$('.gallery-thumb').find(button => button.classList.contains('active'));
+    const source = selectedView?.dataset.highres || selectedView?.dataset.image ||
+      mainImage.dataset.highres || mainImage.getAttribute('src');
+    if (!source) return;
+    const revision = ++zoomRevision;
+    const fallback = selectedView?.dataset.fallback || mainImage.dataset.fallback;
+    imageFallbackState.set(zoomImage, { used: false });
+    if (fallback) zoomImage.dataset.fallback = fallback;
+    else delete zoomImage.dataset.fallback;
+    zoomImage.removeAttribute('srcset');
+    zoomImage.removeAttribute('sizes');
+    zoomImage.alt = selectedView?.dataset.alt || mainImage.alt || 'MagnaNest magnetic shelf';
+    text('#zoomCaption', selectedView?.dataset.caption || zoomImage.alt);
+    zoomImage.src = source;
+    zoomReturnFocus = zoomTrigger;
+    hidePromo();
+    setBackgroundInert(true);
+    document.body.classList.add('zoom-open');
+    zoom.hidden = false;
+    zoom.setAttribute('aria-hidden', 'false');
+    zoomTrigger.setAttribute('aria-expanded', 'true');
+    zoom.classList.add('open', 'loading');
+    focusFirst(zoom);
+    updateMobileBuy();
+    try { if (typeof zoomImage.decode === 'function') await zoomImage.decode(); } catch {}
+    if (revision === zoomRevision && !zoom.hidden) zoom.classList.remove('loading');
+  }
+
+  function closeZoom(restoreFocus = true, resumePromo = true) {
+    if (!zoom || zoom.hidden) return;
+    zoomRevision += 1;
+    zoom.hidden = true;
+    zoom.setAttribute('aria-hidden', 'true');
+    if (zoomTrigger) zoomTrigger.setAttribute('aria-expanded', 'false');
+    zoom.classList.remove('open', 'loading');
+    document.body.classList.remove('zoom-open');
+    setBackgroundInert(false);
+    if (resumePromo) showPromoToast();
+    updateMobileBuy();
+    if (restoreFocus) {
+      const target = canFocus(zoomReturnFocus) ? zoomReturnFocus
+        : canFocus(zoomTrigger) ? zoomTrigger : $('#cartOpen');
+      if (canFocus(target)) target.focus({ preventScroll: true });
+    }
+    zoomReturnFocus = null;
+  }
+
+  listen('#galleryZoom', 'click', openZoom);
+  listen('#zoomClose', 'click', () => closeZoom());
+  listen('#imageZoom', 'click', event => {
+    if (event.target === zoom) closeZoom();
+  });
+
+  /* Reveal once near the viewport; keyboard and reduced-motion users see content immediately. */
   const revealItems = $$('.reveal, .reveal-scale');
+  let revealObserver = null;
+  const revealAll = () => {
+    if (revealObserver) revealObserver.disconnect();
+    revealItems.forEach(element => element.classList.add('is-visible'));
+  };
   if ('IntersectionObserver' in window && !reducedMotion.matches) {
-    const observer = new IntersectionObserver(entries => {
+    revealObserver = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (!entry.isIntersecting) return;
         entry.target.classList.add('is-visible');
-        observer.unobserve(entry.target);
+        revealObserver.unobserve(entry.target);
       });
     }, { threshold: 0.08, rootMargin: '0px 0px -3% 0px' });
-    revealItems.forEach(element => observer.observe(element));
+    revealItems.forEach(element => revealObserver.observe(element));
   } else {
-    revealItems.forEach(element => element.classList.add('is-visible'));
+    revealAll();
+  }
+  if (typeof reducedMotion.addEventListener === 'function') {
+    reducedMotion.addEventListener('change', () => {
+      if (!reducedMotion.matches) return;
+      revealAll();
+      if (mainFrame) mainFrame.classList.remove('switching');
+      $$('[data-parallax] img').forEach(image => { image.style.transform = ''; });
+    });
   }
 
   const header = $('.site-header');
@@ -579,21 +667,6 @@
     });
   }
 
-  const announcement = $('.announcement');
-  const messages = [
-    'A little space. A better kitchen.',
-    '2 shelves · $42.42 · save 15% · free shipping',
-    '3 shelves · $56.14 · save 25% · free shipping'
-  ];
-  let messageIndex = 0;
-  if (announcement && !reducedMotion.matches) {
-    window.setInterval(() => {
-      if (document.hidden || reducedMotion.matches) return;
-      messageIndex = (messageIndex + 1) % messages.length;
-      announcement.textContent = messages[messageIndex];
-    }, 6000);
-  }
-
   if (cart) {
     cart.hidden = true;
     cart.setAttribute('aria-hidden', 'true');
@@ -605,6 +678,15 @@
     offer.hidden = true;
     offer.setAttribute('aria-hidden', 'true');
     offer.setAttribute('tabindex', '-1');
+  }
+  if (zoomTrigger) zoomTrigger.setAttribute('aria-expanded', 'false');
+  if (zoom) {
+    zoom.hidden = true;
+    zoom.setAttribute('aria-hidden', 'true');
+    zoom.setAttribute('role', 'dialog');
+    zoom.setAttribute('aria-modal', 'true');
+    zoom.setAttribute('tabindex', '-1');
+    if (!zoom.hasAttribute('aria-labelledby')) zoom.setAttribute('aria-label', 'Product image detail');
   }
   if (overlay) overlay.hidden = true;
   if (promo) promo.hidden = true;
