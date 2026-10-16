@@ -1,0 +1,86 @@
+{
+  "origin": "https://deploy-preview-1--magnanest.netlify.app",
+  "checkedAt": "2026-10-16T22:06:47.977Z",
+  "commit": "7e4055ab22a783ea096530574a51c498b5367dfc",
+  "css": {
+    "attempts": [
+      {
+        "attempt": 1,
+        "status": 200,
+        "bytes": 55400,
+        "matchesBuild": true
+      }
+    ],
+    "matchesBuild": true
+  },
+  "errors": [],
+  "passed": true,
+  "uploadPackage": {
+    "verified": true,
+    "bytes": 1713330,
+    "entries": 32
+  },
+  "title": "MagnaNest — Your counter. Cleared.",
+  "heading": "Your counter. Cleared.",
+  "images": [
+    {
+      "source": "https://deploy-preview-1--magnanest.netlify.app/assets/editorial-kitchen-360.jpg",
+      "width": 349,
+      "height": 437
+    },
+    {
+      "source": "https://deploy-preview-1--magnanest.netlify.app/assets/product-studio-360.jpg",
+      "width": 349,
+      "height": 437
+    },
+    {
+      "source": "https://deploy-preview-1--magnanest.netlify.app/assets/product-studio-360.jpg",
+      "width": 360,
+      "height": 450
+    },
+    {
+      "source": "https://deploy-preview-1--magnanest.netlify.app/assets/editorial-kitchen-360.jpg",
+      "width": 360,
+      "height": 450
+    },
+    {
+      "source": "https://deploy-preview-1--magnanest.netlify.app/assets/product-front-360.jpg",
+      "width": 360,
+      "height": 450
+    },
+    {
+      "source": "https://deploy-preview-1--magnanest.netlify.app/assets/product-detail-360.jpg",
+      "width": 360,
+      "height": 450
+    },
+    {
+      "source": "https://deploy-preview-1--magnanest.netlify.app/assets/editorial-coffee-360.jpg",
+      "width": 360,
+      "height": 450
+    },
+    {
+      "source": "https://deploy-preview-1--magnanest.netlify.app/assets/editorial-kitchen-360.jpg",
+      "width": 349,
+      "height": 437
+    },
+    {
+      "source": "https://deploy-preview-1--magnanest.netlify.app/assets/editorial-coffee-360.jpg",
+      "width": 168,
+      "height": 210
+    },
+    {
+      "source": "https://deploy-preview-1--magnanest.netlify.app/assets/product-detail-360.jpg",
+      "width": 168,
+      "height": 210
+    }
+  ],
+  "layout": {
+    "width": 390,
+    "scrollWidth": 390,
+    "background": "rgb(245, 241, 232)",
+    "font": "Manrope, Arial, sans-serif",
+    "headingSize": "59.475px",
+    "heroRatio": 0.8
+  },
+  "screenshot": "review/live-preview-390.jpg"
+}
