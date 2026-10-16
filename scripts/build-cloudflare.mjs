@@ -1,3 +1,4 @@
+// Netlify source deployment: 6abedb69b74072c9764cfe00 — keep Cloudflare storefront in sync.
 import { cp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
