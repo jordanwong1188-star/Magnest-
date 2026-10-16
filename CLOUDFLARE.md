@@ -1,15 +1,18 @@
-# Magnanest Cloudflare storefront
+# MagnaNest on Cloudflare Pages
 
-This source exports the user-selected live Netlify version at https://magnanest-store.netlify.app/, published deployment `6abedb69b74072c9764cfe00` (October 1, 2026). Its typography, layout, responsive gallery, cart persistence, upsells, and 12-shelf cart limit are retained.
+Target: https://magnanest.pages.dev
+Repository: jordanwong1188-star/Magnest-
+Production branch: main
+Build command: `node scripts/build-cloudflare.mjs`
+Publish directory: `dist`
+No package installation or secret keys are needed to build the static site.
 
-Netlify image transformations have been exported as local WebP assets in all existing responsive sizes. Cloudflare does not need Netlify Image CDN. `export-manifest.json` records the source image mapping.
+The build copies the complete storefront, local responsive JPEGs, fallback WebPs and policy pages. It preserves no-store caching for the public checkout configuration and generates the sitemap for CF_PAGES_URL.
 
-Build: `node scripts/build-cloudflare.mjs`. Output: `dist`. Deploy from `main`. No dependencies or payment credentials are needed for this static storefront.
+Existing Stripe checkout links for quantities 1–12 are preserved from the current production source. Payments remain USD, with shipping to Canada and the USA. One shelf is $24.95 plus $2.99 shipping; 2 shelves are $42.42 and 3 are $56.14 with free shipping. Above 3, the existing 25% subtotal calculation remains. Quantities cannot be changed inside Stripe.
 
-Stripe account: Magnanest (`acct_1UQbFWB9mDibMqy4`). Public fixed-bundle Payment Links for quantities 1–12 are in `checkout-config.js`. All prices remain **USD**, matching the selected Netlify version. One shelf is $24.95 plus $2.99 shipping (12%, rounded to cents). Two shelves are $42.42 and three are $56.14; quantities 3–12 retain the existing 25% bundle formula. Shipping is free for 2+. All links require a shipping address in Canada or the USA. Customers cannot adjust quantities inside Stripe; quantity changes belong in the storefront.
+Stripe API verification on 16 October 2026 confirmed all 12 configured links are active, USD-priced, collect CA/US shipping addresses, have fixed quantities and match the storefront totals. The Magnanest account reported charges and payouts enabled. No payment or account configuration was changed.
 
-Orders and payment status must be reviewed in the Magnanest Stripe Dashboard for manual fulfillment. Supplier fulfillment is not automated. Payment-event webhooks for `checkout.session.completed` and `checkout.session.async_payment_succeeded`, with signature validation and duplicate protection, are required when implementing automated order handling; the browser confirmation is never an order-fulfillment trigger. Never ship a pending asynchronous payment.
+Orders are manually fulfilled through the merchant's Stripe Dashboard and supplier arrangements. This rebuild does not automate supplier orders or treat a browser return as proof of payment. Future webhook fulfillment must validate signatures and handle duplicate/payment-pending events.
 
-Bank payouts remain subject to Stripe identity verification. The Stripe business profile's product description needs correcting from AI automation to physical magnetic kitchen storage shelves in the Dashboard; account-profile writes are not exposed by the connected integration.
-
-The unused CAD Payment Links from the earlier source version were deactivated.
+Before paid advertising, confirm supplier delivery performance, support email, return arrangements and the exact physical sample. The AI-assisted product photography is not a supplier sample or load-capacity certification.
