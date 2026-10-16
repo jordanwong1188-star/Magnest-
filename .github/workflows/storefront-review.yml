@@ -1,4 +1,4 @@
-name: Storefront browser review
+name: Cloudflare publication check
 on:
   push:
     branches:
@@ -9,13 +9,13 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: magnanest-storefront-review
+  group: magnanest-cloudflare-publication
   cancel-in-progress: true
 jobs:
-  browser-review:
+  publication-check:
     if: github.ref == 'refs/heads/magnanest-rebuild-review'
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
         with:
@@ -23,24 +23,61 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install browser test dependencies
-        run: |
-          npm install --no-save --ignore-scripts playwright@1.56.1
-          npx playwright install --with-deps chromium
       - name: Build Cloudflare upload
         run: node scripts/build-cloudflare.mjs
-      - name: Review rendered storefront
-        run: node tools/browser-check.mjs
-      - name: Inspect current Cloudflare deployment
-        if: always()
-        run: node tools/probe-live.mjs
-      - name: Record screenshots and browser results
+      - name: Package the ready-to-upload website
+        run: |
+          mkdir -p review
+          cd dist
+          zip -q -r ../review/magnanest-cloudflare-upload.zip .
+      - name: Compare published websites with the build
+        run: |
+          node --input-type=module <<'NODE'
+          import { spawn } from 'node:child_process';
+          import { readFile } from 'node:fs/promises';
+          import { setTimeout } from 'node:timers/promises';
+          const targets = [
+            ['cloudflare', 'https://magnanest.pages.dev'],
+            ['netlify', 'https://magnanest.netlify.app'],
+            ['netlify-store', 'https://magnanest-store.netlify.app'],
+            ['netlify-preview', 'https://deploy-preview-1--magnanest.netlify.app']
+          ];
+          async function probe([name, origin]) {
+            await new Promise((resolve, reject) => {
+              const child = spawn(process.execPath, ['tools/probe-live.mjs'], {
+                stdio: 'inherit',
+                env: { ...process.env, MAGNANEST_PROBE_ORIGIN: origin, MAGNANEST_PROBE_NAME: name }
+              });
+              child.once('error', reject);
+              child.once('close', code => code === 0 ? resolve() : reject(new Error(name + ' probe exited ' + code)));
+            });
+            return JSON.parse(await readFile('review/' + name + '-status.json', 'utf8'));
+          }
+          const firstResults = await Promise.all(targets.map(probe));
+          let cloudflare = firstResults[0];
+          for (let attempt = 2; !cloudflare.matchesBuild && attempt <= 6; attempt++) {
+            console.log('Waiting for Cloudflare publication: probe ' + attempt + '/6');
+            await setTimeout(15000);
+            cloudflare = await probe(targets[0]);
+          }
+          const netlifyResults = await Promise.all(targets.slice(1).map(probe));
+          console.log(JSON.stringify({
+            cloudflareMatchesBuild: cloudflare.matchesBuild,
+            otherSites: netlifyResults.map(status => ({ origin: status.origin, matchesBuild: status.matchesBuild }))
+          }, null, 2));
+          if (!cloudflare.matchesBuild) {
+            console.error('Cloudflare has not published this build. The ready-to-upload ZIP and host comparisons are in review/.');
+            process.exitCode = 1;
+          }
+          NODE
+      - name: Record upload package and publication results
         if: always()
         run: |
-          if [ ! -d review ]; then exit 0; fi
+          for review_file in review/magnanest-cloudflare-upload.zip review/cloudflare-status.json review/cloudflare-live.html review/netlify-status.json review/netlify-live.html review/netlify-store-status.json review/netlify-store-live.html review/netlify-preview-status.json review/netlify-preview-live.html; do
+            if [ -f "$review_file" ]; then git add "$review_file"; fi
+          done
+          if git diff --cached --quiet; then exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add review
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m "[skip ci] Record browser review"
+          git commit -m "[skip ci] Record website upload and publication checks"
           git push origin HEAD:magnanest-rebuild-review
