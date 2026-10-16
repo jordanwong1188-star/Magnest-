@@ -1,0 +1,46 @@
+{
+  "checkedAt": "2026-10-16T21:57:46.314Z",
+  "origin": "https://magnanest.pages.dev",
+  "commit": "10c9068617a151263c557d0650b31f78faf3ea99",
+  "files": [
+    {
+      "file": "index.html",
+      "status": 200,
+      "url": "https://magnanest.pages.dev/",
+      "bytes": 15829,
+      "matches": false,
+      "title": "MagnaNest — Space that sticks.",
+      "hasRebuiltHero": false,
+      "hasNewImagery": false
+    },
+    {
+      "file": "styles.css",
+      "status": 200,
+      "url": "https://magnanest.pages.dev/styles.css",
+      "bytes": 27529,
+      "matches": false
+    },
+    {
+      "file": "app.js",
+      "status": 200,
+      "url": "https://magnanest.pages.dev/app.js",
+      "bytes": 10586,
+      "matches": false
+    },
+    {
+      "file": "checkout-config.js",
+      "status": 404,
+      "url": "https://magnanest.pages.dev/checkout-config.js",
+      "bytes": 850,
+      "matches": false
+    },
+    {
+      "file": "assets/editorial-kitchen-720.jpg",
+      "status": 404,
+      "url": "https://magnanest.pages.dev/assets/editorial-kitchen-720.jpg",
+      "bytes": 850,
+      "matches": false
+    }
+  ],
+  "matchesBuild": false
+}
