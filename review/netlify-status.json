@@ -1,0 +1,71 @@
+{
+  "checkedAt": "2026-10-16T22:03:59.252Z",
+  "origin": "https://magnanest.netlify.app",
+  "commit": "3bc359a070e7636536bec997f899fb45be57015e",
+  "files": [
+    {
+      "file": "index.html",
+      "status": 200,
+      "url": "https://magnanest.netlify.app/",
+      "bytes": 15989,
+      "matches": false,
+      "headers": {
+        "server": "Netlify",
+        "etag": "\"a26259733d6f26c19c010b9c68511bc8-ssl-df\"",
+        "x-nf-request-id": "01M53BWKF0Y1YQGE214AGKAWA0"
+      },
+      "title": "MagnaNest — Space that sticks.",
+      "hasRebuiltHero": false,
+      "hasNewImagery": false
+    },
+    {
+      "file": "styles.css",
+      "status": 200,
+      "url": "https://magnanest.netlify.app/styles.css",
+      "bytes": 26913,
+      "matches": false,
+      "headers": {
+        "server": "Netlify",
+        "etag": "\"acd3a096447653d76e260317ceb732e2-ssl-df\"",
+        "x-nf-request-id": "01M53BWKF21YRQYKJG0ENW4J5N"
+      }
+    },
+    {
+      "file": "app.js",
+      "status": 200,
+      "url": "https://magnanest.netlify.app/app.js",
+      "bytes": 8597,
+      "matches": false,
+      "headers": {
+        "server": "Netlify",
+        "etag": "\"38c893a5804550411a572feccd795676-ssl-df\"",
+        "x-nf-request-id": "01M53BWKEXKWTB9GAX67WS2CQJ"
+      }
+    },
+    {
+      "file": "checkout-config.js",
+      "status": 404,
+      "url": "https://magnanest.netlify.app/checkout-config.js",
+      "bytes": 1385,
+      "matches": false,
+      "headers": {
+        "server": "Netlify",
+        "etag": "1790217579-ssl-df",
+        "x-nf-request-id": "01M53BWKEVHR2EFFJS249KFCST"
+      }
+    },
+    {
+      "file": "assets/editorial-kitchen-720.jpg",
+      "status": 404,
+      "url": "https://magnanest.netlify.app/assets/editorial-kitchen-720.jpg",
+      "bytes": 1385,
+      "matches": false,
+      "headers": {
+        "server": "Netlify",
+        "etag": "1790217579-ssl-df",
+        "x-nf-request-id": "01M53BWKF1TMDK2F1G5YKB9X6K"
+      }
+    }
+  ],
+  "matchesBuild": false
+}

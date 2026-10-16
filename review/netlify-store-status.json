@@ -1,0 +1,71 @@
+{
+  "checkedAt": "2026-10-16T22:03:59.251Z",
+  "origin": "https://magnanest-store.netlify.app",
+  "commit": "3bc359a070e7636536bec997f899fb45be57015e",
+  "files": [
+    {
+      "file": "index.html",
+      "status": 200,
+      "url": "https://magnanest-store.netlify.app/",
+      "bytes": 27991,
+      "matches": false,
+      "headers": {
+        "server": "Netlify",
+        "etag": "\"39176823b5f0dc6707c0c626eae0ff5b-ssl-df\"",
+        "x-nf-request-id": "01M53BWKF422R6742VPXJZC59C"
+      },
+      "title": "MagnaNest — A little shelf. A lot more space.",
+      "hasRebuiltHero": false,
+      "hasNewImagery": false
+    },
+    {
+      "file": "styles.css",
+      "status": 200,
+      "url": "https://magnanest-store.netlify.app/styles.css",
+      "bytes": 41766,
+      "matches": false,
+      "headers": {
+        "server": "Netlify",
+        "etag": "\"7dd4db7f18e0bfb5177385c3f13278c1-ssl-df\"",
+        "x-nf-request-id": "01M53BWKF6XKJ2AQ4TQJSSDKEG"
+      }
+    },
+    {
+      "file": "app.js",
+      "status": 200,
+      "url": "https://magnanest-store.netlify.app/app.js",
+      "bytes": 24290,
+      "matches": false,
+      "headers": {
+        "server": "Netlify",
+        "etag": "\"556c0f7775398f20737ef36d6a711b0c-ssl-df\"",
+        "x-nf-request-id": "01M53BWKF2H22BJ5CJBQD2X5MY"
+      }
+    },
+    {
+      "file": "checkout-config.js",
+      "status": 200,
+      "url": "https://magnanest-store.netlify.app/checkout-config.js",
+      "bytes": 458,
+      "matches": false,
+      "headers": {
+        "server": "Netlify",
+        "etag": "\"fbb2494359e27fba3cab139e146050ed-ssl\"",
+        "x-nf-request-id": "01M53BWKF80XWCJNYN7ER2SK4C"
+      }
+    },
+    {
+      "file": "assets/editorial-kitchen-720.jpg",
+      "status": 404,
+      "url": "https://magnanest-store.netlify.app/assets/editorial-kitchen-720.jpg",
+      "bytes": 1385,
+      "matches": false,
+      "headers": {
+        "server": "Netlify",
+        "etag": "1790216684-ssl-df",
+        "x-nf-request-id": "01M53BWKF9C0FC4418K5X237T5"
+      }
+    }
+  ],
+  "matchesBuild": false
+}

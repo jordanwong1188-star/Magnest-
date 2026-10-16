@@ -1,0 +1,64 @@
+{
+  "checkedAt": "2026-10-16T22:03:59.245Z",
+  "origin": "https://deploy-preview-1--magnanest.netlify.app",
+  "commit": "3bc359a070e7636536bec997f899fb45be57015e",
+  "files": [
+    {
+      "file": "index.html",
+      "status": 200,
+      "url": "https://deploy-preview-1--magnanest.netlify.app/",
+      "bytes": 31435,
+      "matches": false,
+      "headers": {
+        "server": "Netlify",
+        "etag": "\"1e01ab05c58ca523bc54b41b074796a7-ssl-df\"",
+        "x-nf-request-id": "01M53BWKF4C02S07N5TTPN89Z2"
+      },
+      "title": "MagnaNest — Your counter. Cleared.",
+      "hasRebuiltHero": true,
+      "hasNewImagery": true
+    },
+    {
+      "file": "styles.css",
+      "error": "TypeError: fetch failed",
+      "matches": false
+    },
+    {
+      "file": "app.js",
+      "status": 200,
+      "url": "https://deploy-preview-1--magnanest.netlify.app/app.js",
+      "bytes": 28693,
+      "matches": true,
+      "headers": {
+        "server": "Netlify",
+        "etag": "\"12027f02eb5d9ef3b6459a1ccf6120a0-ssl-df\"",
+        "x-nf-request-id": "01M53BWKEMP2556D6NS4X9Q5Y7"
+      }
+    },
+    {
+      "file": "checkout-config.js",
+      "status": 200,
+      "url": "https://deploy-preview-1--magnanest.netlify.app/checkout-config.js",
+      "bytes": 938,
+      "matches": true,
+      "headers": {
+        "server": "Netlify",
+        "etag": "\"b0e1b0778b55406dfbcdcb1e2a249057-ssl\"",
+        "x-nf-request-id": "01M53BWKEQ26AXCWB0QCA6QKJB"
+      }
+    },
+    {
+      "file": "assets/editorial-kitchen-720.jpg",
+      "status": 200,
+      "url": "https://deploy-preview-1--magnanest.netlify.app/assets/editorial-kitchen-720.jpg",
+      "bytes": 140796,
+      "matches": true,
+      "headers": {
+        "server": "Netlify",
+        "etag": "\"5be55aca730f37b3e5df1d12f8e1eacc-ssl\"",
+        "x-nf-request-id": "01M53BWKENPKPDJAMS12A7Z6MD"
+      }
+    }
+  ],
+  "matchesBuild": false
+}
