@@ -1,4 +1,4 @@
-name: Cloudflare publication check
+name: Live preview verification
 on:
   push:
     branches:
@@ -9,10 +9,10 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: magnanest-cloudflare-publication
+  group: magnanest-live-preview
   cancel-in-progress: true
 jobs:
-  publication-check:
+  live-preview:
     if: github.ref == 'refs/heads/magnanest-rebuild-review'
     runs-on: ubuntu-latest
     timeout-minutes: 8
@@ -23,61 +23,112 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Build Cloudflare upload
+      - name: Build expected site files
         run: node scripts/build-cloudflare.mjs
-      - name: Package the ready-to-upload website
+      - name: Install the preview browser
         run: |
-          mkdir -p review
-          cd dist
-          zip -q -r ../review/magnanest-cloudflare-upload.zip .
-      - name: Compare published websites with the build
+          npm install --no-save --ignore-scripts playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Verify the live preview and upload package
         run: |
           node --input-type=module <<'NODE'
-          import { spawn } from 'node:child_process';
-          import { readFile } from 'node:fs/promises';
+          import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
+          import { createHash } from 'node:crypto';
+          import { execFile } from 'node:child_process';
+          import { promisify } from 'node:util';
           import { setTimeout } from 'node:timers/promises';
-          const targets = [
-            ['cloudflare', 'https://magnanest.pages.dev'],
-            ['netlify', 'https://magnanest.netlify.app'],
-            ['netlify-store', 'https://magnanest-store.netlify.app'],
-            ['netlify-preview', 'https://deploy-preview-1--magnanest.netlify.app']
-          ];
-          async function probe([name, origin]) {
-            await new Promise((resolve, reject) => {
-              const child = spawn(process.execPath, ['tools/probe-live.mjs'], {
-                stdio: 'inherit',
-                env: { ...process.env, MAGNANEST_PROBE_ORIGIN: origin, MAGNANEST_PROBE_NAME: name }
-              });
-              child.once('error', reject);
-              child.once('close', code => code === 0 ? resolve() : reject(new Error(name + ' probe exited ' + code)));
+          import assert from 'node:assert/strict';
+          import { chromium } from 'playwright';
+          const origin = 'https://deploy-preview-1--magnanest.netlify.app';
+          const result = { origin, checkedAt: new Date().toISOString(), commit: process.env.GITHUB_SHA, css: { attempts: [], matchesBuild: false }, errors: [], passed: false };
+          const sha = body => createHash('sha256').update(body).digest('hex');
+          await mkdir('review', { recursive: true });
+          let browser;
+          let page;
+          try {
+            const runFile = promisify(execFile);
+            const packagePath = 'review/magnanest-cloudflare-upload.zip';
+            const tested = await runFile('unzip', ['-t', packagePath]);
+            const listed = await runFile('unzip', ['-Z1', packagePath]);
+            await writeFile('review/upload-package.txt', tested.stdout + '\nPACKAGE CONTENTS\n' + listed.stdout);
+            const entries = listed.stdout.trim().split('\n').map(name => name.replace(/^\.\//, ''));
+            for (const required of ['index.html', 'styles.css', 'app.js', 'checkout-config.js', 'assets/editorial-kitchen-720.jpg']) {
+              assert(entries.includes(required), 'Missing upload root file: ' + required);
+            }
+            result.uploadPackage = { verified: true, bytes: (await stat(packagePath)).size, entries: entries.length };
+            const expectedCss = await readFile('dist/styles.css');
+            for (let attempt = 1; attempt <= 3; attempt++) {
+              try {
+                const response = await fetch(origin + '/styles.css', { signal: AbortSignal.timeout(30000), headers: { 'Cache-Control': 'no-cache' } });
+                const body = Buffer.from(await response.arrayBuffer());
+                const matches = response.ok && sha(body) === sha(expectedCss);
+                result.css.attempts.push({ attempt, status: response.status, bytes: body.length, matchesBuild: matches });
+                if (matches) { result.css.matchesBuild = true; break; }
+              } catch (error) {
+                result.css.attempts.push({ attempt, error: String(error) });
+              }
+              if (attempt < 3) await setTimeout(1000);
+            }
+            if (!result.css.matchesBuild) result.errors.push('The preview stylesheet did not match the expected build after three attempts.');
+            browser = await chromium.launch();
+            const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce', deviceScaleFactor: 1 });
+            page = await context.newPage();
+            page.setDefaultTimeout(20000);
+            page.on('pageerror', error => result.errors.push(String(error.stack || error)));
+            await page.goto(origin + '/', { waitUntil: 'domcontentloaded', timeout: 60000 });
+            result.title = await page.title();
+            const heading = (await page.locator('.hero h1').innerText()).replace(/\s+/g, ' ').trim();
+            assert(heading.includes('Your counter.') && heading.includes('Cleared.'), 'The rebuilt hero is missing.');
+            result.heading = heading;
+            const height = await page.evaluate(() => document.documentElement.scrollHeight);
+            for (let top = 0; top < height; top += 650) {
+              await page.evaluate(y => window.scrollTo(0, y), top);
+              await page.waitForTimeout(40);
+            }
+            await page.waitForFunction(() => [...document.images].every(image => !image.getClientRects().length || (image.complete && image.naturalWidth > 0)), { timeout: 20000 });
+            result.images = await page.locator('img').evaluateAll(images => images.filter(image => image.getClientRects().length).map(image => ({ source: image.currentSrc, width: image.naturalWidth, height: image.naturalHeight })));
+            assert(result.images.length >= 10, 'The expected product images are missing.');
+            const layout = await page.evaluate(() => {
+              const body = getComputedStyle(document.body);
+              const h1 = getComputedStyle(document.querySelector('.hero h1'));
+              const photo = document.querySelector('.hero-photo').getBoundingClientRect();
+              return { width: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth, background: body.backgroundColor, font: body.fontFamily, headingSize: h1.fontSize, heroRatio: photo.width / photo.height };
             });
-            return JSON.parse(await readFile('review/' + name + '-status.json', 'utf8'));
-          }
-          const firstResults = await Promise.all(targets.map(probe));
-          let cloudflare = firstResults[0];
-          for (let attempt = 2; !cloudflare.matchesBuild && attempt <= 6; attempt++) {
-            console.log('Waiting for Cloudflare publication: probe ' + attempt + '/6');
-            await setTimeout(15000);
-            cloudflare = await probe(targets[0]);
-          }
-          const netlifyResults = await Promise.all(targets.slice(1).map(probe));
-          console.log(JSON.stringify({
-            cloudflareMatchesBuild: cloudflare.matchesBuild,
-            otherSites: netlifyResults.map(status => ({ origin: status.origin, matchesBuild: status.matchesBuild }))
-          }, null, 2));
-          if (!cloudflare.matchesBuild) {
-            console.error('Cloudflare has not published this build. The ready-to-upload ZIP and host comparisons are in review/.');
-            process.exitCode = 1;
+            result.layout = layout;
+            assert(layout.scrollWidth <= layout.width + 1, 'Horizontal page overflow.');
+            assert(layout.font.includes('Manrope'), 'Expected typography is not applied.');
+            assert(parseFloat(layout.headingSize) >= 48, 'Hero typography is unstyled.');
+            assert(Math.abs(layout.heroRatio - 0.8) < 0.03, 'Hero photograph proportions are incorrect.');
+            assert(!['rgba(0, 0, 0, 0)', 'rgb(255, 255, 255)'].includes(layout.background), 'The expected background colour is not applied.');
+            await page.evaluate(() => window.scrollTo(0, 0));
+            if (await page.locator('#promoClose').isVisible()) await page.locator('#promoClose').click();
+            await page.waitForTimeout(150);
+            for (const quality of [70, 55, 40, 28]) {
+              await page.screenshot({ path: 'review/live-preview-390.jpg', fullPage: true, type: 'jpeg', quality });
+              if ((await stat('review/live-preview-390.jpg')).size < 950000) break;
+            }
+            result.screenshot = 'review/live-preview-390.jpg';
+          } catch (error) {
+            result.errors.push(String(error.stack || error));
+            if (page) {
+              try { await page.screenshot({ path: 'review/live-preview-390.jpg', fullPage: true, type: 'jpeg', quality: 55 }); } catch {}
+            }
+          } finally {
+            if (browser) await browser.close();
+            result.passed = result.errors.length === 0 && result.css.matchesBuild && result.uploadPackage?.verified === true;
+            await writeFile('review/live-preview-status.json', JSON.stringify(result, null, 2) + '\n');
+            console.log(JSON.stringify(result, null, 2));
+            if (!result.passed) process.exitCode = 1;
           }
           NODE
-      - name: Record upload package and publication results
+      - name: Record verified preview and package inventory
         if: always()
         run: |
-          for review_file in review/magnanest-cloudflare-upload.zip review/cloudflare-status.json review/cloudflare-live.html review/netlify-status.json review/netlify-live.html review/netlify-store-status.json review/netlify-store-live.html review/netlify-preview-status.json review/netlify-preview-live.html; do
+          for review_file in review/live-preview-390.jpg review/live-preview-status.json review/upload-package.txt; do
             if [ -f "$review_file" ]; then git add "$review_file"; fi
           done
           if git diff --cached --quiet; then exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "[skip ci] Record website upload and publication checks"
+          git commit -m "[skip ci] Record live preview verification"
           git push origin HEAD:magnanest-rebuild-review
