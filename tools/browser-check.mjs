@@ -60,9 +60,9 @@ async function check(name, task) {
     result.errors.push({ name, error: message });
   }
 }
-async function contextPage(width, name) {
+async function contextPage(width, name, height = width < 700 ? 844 : 960) {
   const context = await browser.newContext({
-    viewport: { width, height: width < 700 ? 844 : 960 },
+    viewport: { width, height },
     deviceScaleFactor: 1,
     reducedMotion: 'reduce'
   });
@@ -83,11 +83,46 @@ async function closePromotions(page) {
     if (await page.locator(selector).isVisible()) await page.locator(selector).click();
   }
 }
-async function imageLoaded(page, selector) {
-  await page.waitForFunction(selector => {
+async function backgroundInert(page, expected) {
+  for (const selector of ['main', '.site-header']) {
+    assert.equal(await page.locator(selector).evaluate(element => element.inert), expected,
+      selector + ' must ' + (expected ? 'exclude' : 'allow') + ' background interaction');
+  }
+}
+async function checkoutInViewport(page) {
+  const position = await page.locator('#checkoutButton').evaluate(button => {
+    const bounds = button.getBoundingClientRect();
+    const drawer = document.querySelector('#cartDrawer');
+    const drawerBounds = drawer.getBoundingClientRect();
+    const upsell = document.querySelector('#cartUpsell');
+    const hit = document.elementFromPoint(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
+    return {
+      top: bounds.top, bottom: bounds.bottom, left: bounds.left, right: bounds.right,
+      width: bounds.width, height: bounds.height, viewportWidth: innerWidth, viewportHeight: innerHeight,
+      drawerTop: drawerBounds.top, drawerBottom: drawerBounds.bottom, drawerScrollTop: drawer.scrollTop,
+      unobstructed: Boolean(hit && (hit === button || button.contains(hit))),
+      beforeUpsell: Boolean(button.compareDocumentPosition(upsell) & Node.DOCUMENT_POSITION_FOLLOWING)
+    };
+  });
+  assert(position.width > 0 && position.height >= 44, JSON.stringify(position));
+  assert(position.top >= 0 && position.bottom <= position.viewportHeight + 1, JSON.stringify(position));
+  assert(position.left >= 0 && position.right <= position.viewportWidth + 1, JSON.stringify(position));
+  assert(position.top >= position.drawerTop && position.bottom <= position.drawerBottom + 1, JSON.stringify(position));
+  assert(position.unobstructed, 'Checkout must not be covered: ' + JSON.stringify(position));
+  assert(position.beforeUpsell, 'Checkout must precede the optional upgrade panel.');
+  return position;
+}
+async function imageLoaded(page, selector, expectedSources = []) {
+  await page.waitForFunction(({ selector, expectedSources }) => {
     const image = document.querySelector(selector);
-    return image && image.complete && image.naturalWidth > 0;
-  }, selector);
+    if (!image || !image.complete || !image.naturalWidth) return false;
+    return !expectedSources.length || expectedSources.some(source =>
+      new URL(source, document.baseURI).href === image.currentSrc
+    );
+  }, { selector, expectedSources });
+  await page.locator(selector).evaluate(async image => {
+    if (typeof image.decode === 'function') await image.decode();
+  });
   return page.locator(selector).evaluate(image => ({
     source: image.currentSrc,
     width: image.naturalWidth,
@@ -110,21 +145,32 @@ async function saveSectionScreenshot(page, selector, file) {
 async function scrollPage(page) {
   const height = await page.evaluate(() => document.documentElement.scrollHeight);
   for (let top = 0; top < height; top += 650) {
-    await page.evaluate(y => window.scrollTo(0, y), top);
+    await page.evaluate(y => window.scrollTo({ top: y, behavior: 'instant' }), top);
     await page.waitForTimeout(30);
   }
   await page.waitForFunction(() => [...document.images].every(image =>
     !image.getClientRects().length || (image.complete && image.naturalWidth > 0)
   ));
-  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
   await page.waitForTimeout(100);
 }
 try {
   browser = await chromium.launch();
   for (const width of [320, 390, 701, 768, 1440]) {
     const { context, page } = await contextPage(width, 'viewport-' + width);
+    await check(width + 'px reduced-motion content remains visible', async () => {
+      assert(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches));
+      const hidden = await page.locator('.reveal, .reveal-scale').evaluateAll(elements =>
+        elements.filter(element => {
+          const style = getComputedStyle(element);
+          return style.visibility === 'hidden' || Number(style.opacity) < 0.99;
+        }).map(element => ({ tag: element.tagName, className: element.className }))
+      );
+      assert.equal(hidden.length, 0, JSON.stringify(hidden));
+      return { hiddenRevealElements: hidden.length };
+    });
     await check(width + 'px responsive layout and images', async () => {
-      await imageLoaded(page, '.hero-photo');
+      await imageLoaded(page, '#productMain');
       await scrollPage(page);
       await closePromotions(page);
       const dimensions = await page.evaluate(() => ({
@@ -148,31 +194,56 @@ try {
       assert(dimensions.scroll <= dimensions.viewport + 1, JSON.stringify(dimensions));
       return dimensions;
     });
-    await check(width + 'px product photograph aspect ratios', async () => {
-      const thumbnails = await page.locator('.gallery-thumb img').evaluateAll(images =>
-        images.map(image => {
-          const bounds = image.getBoundingClientRect();
-          return { width: bounds.width, height: bounds.height, source: image.currentSrc };
-        })
+    await check(width + 'px product presentation and readable purchase controls', async () => {
+      assert.equal(await page.locator('#productMain').evaluate(image => getComputedStyle(image).objectFit), 'contain');
+      const usageImage = await page.locator('.use-photo img').evaluate(image => {
+        const bounds = image.getBoundingClientRect();
+        return { width: bounds.width, height: bounds.height, naturalWidth: image.naturalWidth, naturalHeight: image.naturalHeight };
+      });
+      assert(usageImage.width <= 361, 'The original use photograph should not be enlarged beyond its source width.');
+      assert(Math.abs(usageImage.width / usageImage.height - usageImage.naturalWidth / usageImage.naturalHeight) < 0.015,
+        'The use photograph must keep its native proportions: ' + JSON.stringify(usageImage));
+      const controls = await page.locator('.bundle, #addToCart').evaluateAll(elements =>
+        elements.map(element => ({
+          id: element.id,
+          quantity: element.dataset.qty || null,
+          height: element.getBoundingClientRect().height,
+          fontSize: parseFloat(getComputedStyle(element).fontSize)
+        }))
       );
-      for (const image of thumbnails) {
-        assert(Math.abs(image.width - image.height) <= 1, 'Thumbnail must be square: ' + JSON.stringify(image));
+      for (const control of controls) {
+        assert(control.height >= 44, 'Purchase controls need comfortable targets: ' + JSON.stringify(control));
+        assert(control.fontSize >= 14, 'Purchase controls need readable type: ' + JSON.stringify(control));
+        if (control.quantity) assert(control.height <= 128, 'Bundle choices are excessively tall: ' + JSON.stringify(control));
       }
-      const storyImages = await page.locator('.photo-card img').evaluateAll(images =>
-        images.map(image => {
-          const bounds = image.getBoundingClientRect();
-          return { width: bounds.width, height: bounds.height, source: image.currentSrc };
-        })
-      );
-      for (const image of storyImages) {
-        assert(Math.abs(image.width / image.height - 0.8) <= 0.01,
-          'Editorial photograph must use a 4:5 frame: ' + JSON.stringify(image));
-      }
-      return { thumbnails, storyImages };
+      return { usageImage, controls };
     });
+    if (width <= 700) {
+      await check(width + 'px product name and price appear before the gallery', async () => {
+        await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+        const position = await page.evaluate(() => {
+          const title = document.querySelector('#productTitle').getBoundingClientRect();
+          const price = document.querySelector('.product-intro .starting-price').getBoundingClientRect();
+          const gallery = document.querySelector('.product-gallery').getBoundingClientRect();
+          const frame = document.querySelector('.product-main-frame').getBoundingClientRect();
+          return { titleTop: title.top, titleBottom: title.bottom, priceTop: price.top, priceBottom: price.bottom,
+            galleryTop: gallery.top, viewportHeight: innerHeight, frameWidth: frame.width, frameHeight: frame.height };
+        });
+        assert(position.titleTop >= 0 && position.titleBottom <= position.viewportHeight, JSON.stringify(position));
+        assert(position.priceTop >= 0 && position.priceBottom <= position.viewportHeight, JSON.stringify(position));
+        assert(position.galleryTop >= position.priceBottom, 'Mobile gallery must follow the introductory price.');
+        assert(Math.abs(position.frameWidth - position.frameHeight) <= 1, 'The mobile product frame should be square.');
+        return position;
+      });
+    }
     if (width === 390 || width === 1440) {
-      await check(width + 'px section screenshots', async () => {
-        for (const [selector, name] of [['.hero', 'hero'], ['#shop', 'shop'], ['.visual-story', 'story']]) {
+      await check(width + 'px product and usage screenshots', async () => {
+        await closePromotions(page);
+        await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+        const firstView = 'review/hero-' + width + '.jpg';
+        await saveScreenshot(page, firstView, false);
+        result.screenshots.push(firstView);
+        for (const [selector, name] of [['#shop', 'shop'], ['.use-section', 'usage']]) {
           await closePromotions(page);
           const file = 'review/' + name + '-' + width + '.jpg';
           await saveSectionScreenshot(page, selector, file);
@@ -188,28 +259,70 @@ try {
         await closePromotions(page);
         const thumb = thumbs.nth(i);
         await thumb.click();
-        await imageLoaded(page, '#productMain');
+        const mainSources = await thumb.evaluate(button => [
+          button.dataset.image,
+          ...(button.dataset.srcset || '').split(',').map(candidate => candidate.trim().split(/\s+/)[0])
+        ].filter(Boolean));
+        const displayedImage = await imageLoaded(page, '#productMain', mainSources);
         assert.equal(await thumb.getAttribute('aria-pressed'), 'true');
         assert.equal(await page.locator('.gallery-thumb[aria-pressed="true"]').count(), 1);
         assert.equal(await page.locator('#productMain').getAttribute('src'), await thumb.getAttribute('data-image'));
         assert.equal(await page.locator('#productMain').getAttribute('alt'), await thumb.getAttribute('data-alt'));
         await page.locator('#galleryZoom').click();
         assert(await page.locator('#imageZoom').isVisible());
-        const image = await imageLoaded(page, '#zoomImage');
-        assert(image.width >= 1000, 'Zoom should load the high-resolution photograph');
-        images.push(image);
+        await backgroundInert(page, true);
+        await page.keyboard.press('Tab');
+        assert(await page.locator('#zoomClose').evaluate(element => element === document.activeElement));
+        const zoomSource = await thumb.getAttribute('data-highres') || await thumb.getAttribute('data-image');
+        const image = await imageLoaded(page, '#zoomImage', [zoomSource]);
+        assert.equal(await page.locator('#zoomImage').getAttribute('src'), zoomSource);
+        assert.equal(image.source, new URL(zoomSource, page.url()).href);
+        const expectedNativeSize = [
+          { width: 500, height: 625 },
+          { width: 1122, height: 1402 },
+          { width: 500, height: 625 },
+          { width: 1122, height: 1402 },
+          { width: 500, height: 625 }
+        ][i];
+        assert.equal(image.width, expectedNativeSize.width, 'Selected zoom source native width: ' + zoomSource);
+        assert.equal(image.height, expectedNativeSize.height, 'Selected zoom source native height: ' + zoomSource);
+        images.push({ ...image, displayedImage });
         await page.keyboard.press('Escape');
         assert(!(await page.locator('#imageZoom').isVisible()));
+        await backgroundInert(page, false);
         assert(await page.locator('#galleryZoom').evaluate(element => element === document.activeElement));
       }
       return images;
     });
     await context.close();
   }
+  const approvedCheckoutUrls = {
+    "1": "https://buy.stripe.com/bJedR85ZKbTDfu57bT5Rm03",
+    "2": "https://buy.stripe.com/aFa3cu0Fqe1L5Tv53L5Rm04",
+    "3": "https://buy.stripe.com/6oU3cudsc1eZ4Pr0Nv5Rm05",
+    "4": "https://buy.stripe.com/14A4gybk46zj4Prao55Rm06",
+    "5": "https://buy.stripe.com/6oUdR81Ju8Hr81D1Rz5Rm07",
+    "6": "https://buy.stripe.com/28EeVcco83n71Df7bT5Rm08",
+    "7": "https://buy.stripe.com/3cI00i5ZK8Hreq1cwd5Rm09",
+    "8": "https://buy.stripe.com/14A4gy3RC1eZ0zbeEl5Rm0a",
+    "9": "https://buy.stripe.com/dRm4gy2Nyg9Teq1gMt5Rm0b",
+    "10": "https://buy.stripe.com/cNiaEWag0cXH95H67P5Rm0c",
+    "11": "https://buy.stripe.com/dRmdR83RCf5P0zbeEl5Rm0d",
+    "12": "https://buy.stripe.com/7sY7sK87Sg9T2Hj1Rz5Rm0e"
+  };
   const expectedBundles = {
     1: { subtotal: '$24.95', shipping: '$2.99', total: '$27.94' },
     2: { subtotal: '$42.42', shipping: 'Free', total: '$42.42' },
-    3: { subtotal: '$56.14', shipping: 'Free', total: '$56.14' }
+    3: { subtotal: '$56.14', shipping: 'Free', total: '$56.14' },
+    4: { subtotal: '$74.85', shipping: 'Free', total: '$74.85' },
+    5: { subtotal: '$93.56', shipping: 'Free', total: '$93.56' },
+    6: { subtotal: '$112.28', shipping: 'Free', total: '$112.28' },
+    7: { subtotal: '$130.99', shipping: 'Free', total: '$130.99' },
+    8: { subtotal: '$149.70', shipping: 'Free', total: '$149.70' },
+    9: { subtotal: '$168.41', shipping: 'Free', total: '$168.41' },
+    10: { subtotal: '$187.13', shipping: 'Free', total: '$187.13' },
+    11: { subtotal: '$205.84', shipping: 'Free', total: '$205.84' },
+    12: { subtotal: '$224.55', shipping: 'Free', total: '$224.55' }
   };
   for (let quantity = 1; quantity <= 12; quantity++) {
     const { context, page } = await contextPage(390, 'bundle-' + quantity);
@@ -217,11 +330,13 @@ try {
       const selected = Math.min(quantity, 3);
       const expected = expectedBundles[quantity];
       await page.locator('.bundle[data-qty="' + selected + '"]').click();
-      if (expected) assert.equal(await page.locator('#buttonPrice').textContent(), expected.subtotal);
+      assert.equal(await page.locator('#buttonPrice').textContent(), expectedBundles[selected].subtotal);
       await page.locator('#addToCart').click();
       assert(await page.locator('#cartDrawer').isVisible());
+      await backgroundInert(page, true);
       for (let count = selected; count < quantity; count++) await page.locator('#plus').click();
       assert.equal((await page.locator('#cartQty').textContent()).trim(), String(quantity));
+      assert.equal(await page.locator('#plus').isDisabled(), quantity === 12);
       if (expected) {
         assert.equal((await page.locator('#subtotal').textContent()).trim(), expected.subtotal);
         assert.equal((await page.locator('#shippingCost').textContent()).trim(), expected.shipping);
@@ -233,17 +348,37 @@ try {
       if (quantity < 3) {
         await page.waitForTimeout(750);
         assert(await page.locator('#offerModal').isVisible(), 'Optional post-add bundle offer should appear');
-        await page.locator('#offerClose').click();
+        await backgroundInert(page, true);
+        assert(await page.locator('#cartDrawer').evaluate(element => element.inert));
+        if (quantity === 1) {
+          const file = 'review/offer-390.jpg';
+          await saveScreenshot(page, file, false);
+          result.screenshots.push(file);
+          await page.keyboard.press('Escape');
+        }
+        else await page.locator('#declineOffer').click();
+        assert(!(await page.locator('#offerModal').isVisible()));
+        assert(!(await page.locator('#cartDrawer').evaluate(element => element.inert)));
         assert(await page.locator('#cartDrawer').isVisible());
         assert.equal((await page.locator('#cartQty').textContent()).trim(), String(quantity));
       }
       if (quantity === 2) {
+        const checkoutPosition = await checkoutInViewport(page);
+        assert.equal(checkoutPosition.drawerScrollTop, 0, 'The duo checkout must appear when the cart opens.');
         const file = 'review/cart-390.jpg';
         await saveScreenshot(page, file, false);
         result.screenshots.push(file);
       }
+      if (quantity === 3) {
+        for (let tab = 0; tab < 9; tab++) {
+          await page.keyboard.press('Tab');
+          assert(await page.locator('#cartDrawer').evaluate(element => element.contains(document.activeElement)),
+            'Keyboard focus must remain in the open shopping bag');
+        }
+      }
       await page.keyboard.press('Escape');
       assert(!(await page.locator('#cartDrawer').isVisible()));
+      await backgroundInert(page, false);
       assert(await page.locator('#addToCart').evaluate(element => element === document.activeElement));
       await page.locator('#cartOpen').click();
       assert(await page.locator('#cartDrawer').isVisible());
@@ -251,7 +386,8 @@ try {
       assert(!(await page.locator('#cartDrawer').isVisible()));
       assert(await page.locator('#cartOpen').evaluate(element => element === document.activeElement));
       await page.locator('#cartOpen').click();
-      const expectedUrl = await page.evaluate(quantity => window.MAGNANEST_CHECKOUT.urls[quantity], quantity);
+      const expectedUrl = approvedCheckoutUrls[quantity];
+      assert.equal(await page.evaluate(quantity => window.MAGNANEST_CHECKOUT.urls[quantity], quantity), expectedUrl);
       const destination = new URL(expectedUrl);
       assert.equal(destination.protocol, 'https:');
       assert.equal(destination.hostname, 'buy.stripe.com');
@@ -275,9 +411,81 @@ try {
     await context.close();
   }
   {
+    const { context, page } = await contextPage(320, 'short-viewport-cart', 568);
+    await check('320×568px cart checkout remains reachable and the optional upgrade works', async () => {
+      await page.locator('.bundle[data-qty="2"]').click();
+      await page.locator('#addToCart').click();
+      await page.locator('#offerModal').waitFor({ state: 'visible' });
+      await page.locator('#declineOffer').click();
+      assert(await page.locator('#cartDrawer').isVisible());
+      await backgroundInert(page, true);
+      assert.equal((await page.locator('#cartQty').textContent()).trim(), '2');
+      assert.equal((await page.locator('#orderTotal').textContent()).trim(), '$42.42');
+      await page.locator('#checkoutButton').scrollIntoViewIfNeeded();
+      const checkoutPosition = await checkoutInViewport(page);
+      assert(await page.locator('#checkoutButton').isEnabled());
+      const file = 'review/cart-320-short.jpg';
+      await saveScreenshot(page, file, false);
+      result.screenshots.push(file);
+      await page.locator('#checkoutButton').focus();
+      for (let tab = 0; tab < 9; tab++) {
+        await page.keyboard.press('Tab');
+        assert(await page.locator('#cartDrawer').evaluate(element =>
+          element.contains(document.activeElement) && document.activeElement.getClientRects().length > 0
+        ), 'Keyboard focus must stay on visible controls inside the shopping bag.');
+      }
+      await page.locator('#upsellButton').click();
+      assert.equal((await page.locator('#cartQty').textContent()).trim(), '3');
+      assert.equal((await page.locator('#orderTotal').textContent()).trim(), '$56.14');
+      assert.equal((await page.locator('#shippingCost').textContent()).trim(), 'Free');
+      assert(await page.locator('#checkoutButton').isEnabled());
+      await page.keyboard.press('Escape');
+      assert(!(await page.locator('#cartDrawer').isVisible()));
+      await backgroundInert(page, false);
+      assert(await page.locator('#addToCart').evaluate(element => element === document.activeElement));
+      return checkoutPosition;
+    });
+    await context.close();
+  }
+  {
+    const { context, page } = await contextPage(390, 'optional-bundle-upgrade');
+    await check('Optional bundle promotion upgrades one shelf to the approved duo', async () => {
+      await page.locator('.bundle[data-qty="1"]').click();
+      await page.locator('#addToCart').click();
+      await page.locator('#offerModal').waitFor({ state: 'visible' });
+      assert(await page.locator('#cartDrawer').evaluate(element => element.inert));
+      await page.locator('#acceptOffer').click();
+      assert(!(await page.locator('#offerModal').isVisible()));
+      assert(await page.locator('#cartDrawer').isVisible());
+      assert(!(await page.locator('#cartDrawer').evaluate(element => element.inert)));
+      assert.equal((await page.locator('#cartQty').textContent()).trim(), '2');
+      assert.equal((await page.locator('#orderTotal').textContent()).trim(), '$42.42');
+      assert.equal((await page.locator('#shippingCost').textContent()).trim(), 'Free');
+      await backgroundInert(page, true);
+    });
+    await context.close();
+  }
+  {
+    const { context, page } = await contextPage(390, 'scroll-reveals');
+    await check('Below-fold content appears while scrolling with motion enabled', async () => {
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      assert(!(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)));
+      await scrollPage(page);
+      await page.waitForFunction(() => [...document.querySelectorAll('.reveal, .reveal-scale')].every(element =>
+        getComputedStyle(element).visibility !== 'hidden' && Number(getComputedStyle(element).opacity) >= 0.99
+      ));
+    });
+    await context.close();
+  }
+  {
     const { context, page } = await contextPage(390, 'browsing-promotion');
     await check('Browsing promotion remains dismissible', async () => {
       await page.locator('#promoToast').waitFor({ state: 'visible', timeout: 12000 });
+      const file = 'review/promo-390.jpg';
+      await saveScreenshot(page, file, false);
+      result.screenshots.push(file);
+      await backgroundInert(page, false);
       await page.locator('#promoClose').click();
       assert(!(await page.locator('#promoToast').isVisible()));
     });

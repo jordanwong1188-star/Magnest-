@@ -120,14 +120,14 @@
     const availableQuantities = checkoutQuantities();
     const available = availableQuantities.length > 0;
     text('#checkoutStatus', enabled
-      ? 'Secure Stripe checkout. Ships to Canada and the USA. Prices in USD.'
+      ? 'You’ll continue to Stripe to enter payment and delivery details.'
       : available
         ? 'Please choose ' + checkoutQuantityDescription(availableQuantities) + ' to continue to checkout.'
         : persistenceAvailable
           ? 'Online ordering opens soon. Your selection is saved on this device.'
           : 'Online ordering opens soon. Your selection is kept for this visit.');
     text('#productAvailability', available
-      ? 'Choose your setup. Prices in USD. Shipping to Canada and the USA.'
+      ? 'Prices in USD. Ships to Canada and the USA.'
       : persistenceAvailable
         ? 'Online ordering opens soon. You can explore bundles and save your selection on this device.'
         : 'Online ordering opens soon. You can explore bundles during this visit.');
@@ -146,7 +146,7 @@
     text('#buttonPrice', price);
     text('#mobilePrice', price);
     text('#selectionSummary', selected + (selected === 1 ? ' shelf' : ' shelves') + ' · ' + price +
-      (selected === 1 ? ' total' : ' total · save ' + money(selected * UNIT_CENTS - cartPrice(selected))));
+      (selected === 1 ? '' : ' · save ' + money(selected * UNIT_CENTS - cartPrice(selected))));
   }
 
   function renderUpsell() {
@@ -159,17 +159,17 @@
       const target = cartQty + 1;
       const extra = money(orderTotalCents(target) - orderTotalCents(cartQty));
       const percentage = target === 2 ? '15%' : '25%';
-      text('#upsellTitle', target === 2 ? 'Make it a pair.' : 'Complete your setup.');
-      text('#upsellCopy', 'Add one more shelf for ' + extra + ' more. Your ' + target +
-        '-shelf total is ' + money(cartPrice(target)) + ', with ' + percentage +
-        ' bundle savings and free shipping.');
+      text('#upsellTitle', target === 2 ? 'Add a second shelf' : 'Add a third shelf');
+      text('#upsellCopy', 'Add one shelf for ' + extra + ' more. ' + target +
+        ' shelves cost ' + money(cartPrice(target)) + ' with free shipping and ' + percentage +
+        ' bundle savings.');
       if (button) {
         button.hidden = false;
         button.dataset.target = String(target);
         button.textContent = 'Add one shelf · +' + extra;
       }
     } else {
-      text('#upsellTitle', 'Best-value pricing unlocked');
+      text('#upsellTitle', '25% bundle savings');
       text('#upsellCopy', 'Your cart includes 25% bundle savings and free shipping.');
       if (button) button.hidden = true;
     }
@@ -191,10 +191,10 @@
     text('#itemPrice', money(price));
     text('#subtotal', money(price));
     const shipping = cartQty === 1 ? Math.round(price * 0.12) : 0;
-    text('#shippingLabel', cartQty === 1 ? 'Shipping (12%)' : 'Shipping');
+    text('#shippingLabel', 'Shipping');
     text('#shippingCost', shipping ? money(shipping) : 'Free');
     text('#orderTotal', money(price + shipping));
-    text('#cartBundleLabel', cartQty + (cartQty === 1 ? ' Shelf' : ' Shelves'));
+    text('#cartBundleLabel', cartQty + (cartQty === 1 ? ' shelf' : ' shelves'));
     text('#cartUnitPrice', cartQty ? money(Math.round(price / cartQty)) + ' per shelf' : '');
     const progress = $('#progress');
     if (progress) progress.style.width = cartQty >= 2 ? '100%' : cartQty === 1 ? '50%' : '0%';
@@ -355,10 +355,9 @@
 
   function configureOffer(target) {
     const extra = orderTotalCents(target) - orderTotalCents(cartQty);
-    text('#offerBadge', target === 2 ? 'PAIR & SAVE 15%' : 'BEST VALUE · SAVE 25%');
-    text('#offerTitle', target === 2 ? 'A little more room.' : 'Make room for everything.');
-    text('#offerText', 'Add one more shelf for ' + money(extra) +
-      ' more. Your ' + target + '-shelf bundle includes free shipping. This upgrade is optional.');
+    text('#offerBadge', target === 2 ? 'Save 15%' : 'Save 25%');
+    text('#offerTitle', target === 2 ? 'Add a second shelf' : 'Add a third shelf');
+    text('#offerText', 'Add one shelf for ' + money(extra) + ' more. Free shipping is included.');
     text('#offerWas', money(target * UNIT_CENTS) + ' bought separately');
     text('#offerPrice', money(cartPrice(target)) + ' total');
     const accept = $('#acceptOffer');

@@ -1,8 +1,8 @@
 {
-  "rebuilt": "2026-10-16",
+  "rebuilt": "2026-10-17",
   "site": "https://magnanest.pages.dev",
-  "source": "AI-assisted photography based on original MagnaNest product",
-  "imageDelivery": "Local responsive JPEG; no provider CDN dependency",
+  "source": "Supplied product views with existing AI-assisted studio and detail inspection images",
+  "imageDelivery": "Local WebP and responsive JPEG; no provider CDN dependency",
   "images": [
     {
       "path": "assets/editorial-kitchen-360.jpg",
@@ -109,5 +109,16 @@
       "bytes": 306354,
       "sha": "e48b651193373fe33ffbda4c3da56377c06c401b"
     }
-  ]
+  ],
+  "presentation": {
+    "default": "assets/magnanest-product-1.webp",
+    "supporting": "assets/magnanest-product-4.webp",
+    "gallery": [
+      "assets/magnanest-product-1.webp",
+      "assets/product-studio-1122.jpg",
+      "assets/magnanest-product-2.webp",
+      "assets/product-detail-1122.jpg",
+      "assets/magnanest-product-3.webp"
+    ]
+  }
 }

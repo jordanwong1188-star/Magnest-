@@ -1,38 +1,31 @@
-# MagnaNest — Your counter. Cleared.
+# MagnaNest storefront
 
-Complete visual storefront rebuild for https://magnanest.pages.dev, prepared 16 October 2026.
+Product-first storefront for https://magnanest.pages.dev, refined 17 October 2026 with an Astra design review.
 
-## Design and product presentation
+## Presentation
 
-Ivory, deep moss and citrus, Manrope typography with Lora headline emphasis, generous spacing, readable mobile controls, subtle scroll reveals and reduced-motion support. The product and bundle selection follow the hero, with useful compatibility guidance, lifestyle photography and clear FAQs.
+A single product gallery and purchase section replaces the separate lifestyle hero. DM Sans, warm white, charcoal and a small rust accent keep the layout restrained. Product name and starting price precede the photo on mobile. Supplied product views are the main presentation; high-resolution studio and detail views remain available in the gallery. No fabricated reviews, urgency, customer counts or product specifications are included.
 
-Five new AI-assisted images retain the original two-flat-rail shelf design. Native 1122 ×1402 images have portable 360/720/1122 JPEG versions; all 15 responsive files total about 1.7 MB. Images work directly on Cloudflare without Netlify image endpoints. An accessible zoom viewer gives shoppers a closer look.
+Browsing promotions, optional cart upgrades, persistent selections, accessible photo zoom, reduced-motion support and the mobile purchase bar remain. Copy describes the shelf, compatibility and prices directly.
 
-Browsing promotions, optional bag upgrade, persistent cart, integer-cent bundle pricing and the mobile buy control remain. There are no invented ratings, reviews, scarcity claims or customer counts.
+## Commerce
 
-## Existing commerce retained
+The existing public Stripe configuration is unchanged for quantities 1–12. Prices are USD. One shelf is $24.95 plus $2.99 shipping ($27.94); two are $42.42; three are $56.14. Shipping is free for 2+. Quantities above three retain the existing 25% subtotal discount. Upgrade prompts quote actual payable differences: $14.48 from one to two, and $13.72 from two to three.
 
-The newer production Stripe configuration is preserved unchanged for all quantities 1–12. All amounts are USD. One shelf is $24.95 plus$2.99 shipping (total $27.94); two shelves are $42.42; three are $56.14; shipping is free for 2+. Above three, the existing 25% subtotal calculation remains.
+Payment and supplier fulfillment are separate. Orders are manually fulfilled through the merchant's Stripe Dashboard and supplier arrangements. No secret keys belong in this static site.
 
-Stripe API verification confirmed the links are active, fixed-quantity and restricted to shipping addresses in Canada/USA, with prices matching the storefront. Charges/payouts reported enabled. No payment or account mutations were performed. Upgrade offers quote payable increases: $14.48 single → duo and $13.72 duo → trio.
+## Cloudflare Pages
 
-Supplier fulfillment remains manual. Payment status must be reviewed in the merchant's Stripe Dashboard. Public checkout URLs contain no credentials; never add secret keys to checkout-config.js.
+Build: `node scripts/build-cloudflare.mjs`
+Output: `dist`
+Git production branch: `main`
 
-## Build and publish
+For dashboard uploads, choose **Pages** in Workers & Pages, then upload the prepared ZIP to the intended Pages project as a Production deployment. A Workers assets upload produces a workers.dev address; a Pages project produces a pages.dev address. If the desired Pages project exists, update it rather than creating another name.
 
-Existing Cloudflare settings are retained:
-- Production branch: main
-- Build command: `node scripts/build-cloudflare.mjs`
-- Publish directory: `dist`
+See CLOUDFLARE.md for publishing guidance. Source files and local images work without a hosting-specific image CDN.
 
-The static source also works directly: the folder containing index.html can be opened locally or uploaded to an existing Direct Upload project. If the Cloudflare project uses Git integration, use the existing connection rather than dashboard drag-and-drop. An authenticated Wrangler CLI can deploy an existing build:`npx wrangler pages deploy dist --project-name magnanest`. Confirm the project name in your dashboard.
+## Validation
 
-Official deployment guides:
-- https://developers.cloudflare.com/pages/get-started/direct-upload/
-- https://developers.cloudflare.com/pages/get-started/git-integration/
+The isolated review workflow builds dist, verifies the upload ZIP, runs Chromium at five viewport widths, checks gallery/zoom, dialog focus and inert handling, all 12 fixed Stripe destinations with navigation intercepted locally, prices/shipping, mobile layout and promotions. It stores screenshots and results on the review branch. No payment is made during these checks.
 
-## Verification
-
-The review workflow runs only on magnanest-rebuild-review and records browser screenshots/results separately from the production source. It builds dist, checks responsive layouts, local images/zoom, bundle and shipping totals, fixed Stripe destinations, keyboard interactions and promotions. Stripe navigation in tests is intercepted locally; no payment is created.
-
-Image conversion/downsampling uses UPNG.js and jpeg-js; notices are in IMAGE-TOOL-LICENSES.txt. Obtain an actual supplier sample and authorized product content before relying on dimensions, weight limits or delivery claims. Props in lifestyle images are not included.
+Image conversion tooling uses UPNG.js and jpeg-js; notices remain in IMAGE-TOOL-LICENSES.txt. Supplied images and AI-assisted inspection views do not establish supplier stock, dimensions, capacity or delivery performance. Check a physical sample before making those claims.
