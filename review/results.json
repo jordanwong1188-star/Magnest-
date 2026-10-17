@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-17T06:38:40.886Z",
-  "commit": "c80ce859ed6e1818cc1ce64968e51ad076a2ad65",
+  "testedAt": "2026-10-17T06:44:52.562Z",
+  "commit": "aa3f331e856e3f19068bca3cdf7daa11947c0bca",
   "checks": [
     {
       "name": "320px reduced-motion content remains visible",
@@ -77,27 +77,52 @@
         {
           "source": "http://127.0.0.1:4173/assets/magnanest-product-1.webp",
           "width": 500,
-          "height": 625
+          "height": 625,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/magnanest-product-1.webp",
+            "width": 500,
+            "height": 625
+          }
         },
         {
           "source": "http://127.0.0.1:4173/assets/product-studio-1122.jpg",
           "width": 1122,
-          "height": 1402
+          "height": 1402,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/product-studio-360.jpg",
+            "width": 280,
+            "height": 350
+          }
         },
         {
           "source": "http://127.0.0.1:4173/assets/magnanest-product-2.webp",
           "width": 500,
-          "height": 625
+          "height": 625,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/magnanest-product-2.webp",
+            "width": 142,
+            "height": 178
+          }
         },
         {
           "source": "http://127.0.0.1:4173/assets/product-detail-1122.jpg",
           "width": 1122,
-          "height": 1402
+          "height": 1402,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/product-detail-360.jpg",
+            "width": 280,
+            "height": 350
+          }
         },
         {
           "source": "http://127.0.0.1:4173/assets/magnanest-product-3.webp",
           "width": 500,
-          "height": 625
+          "height": 625,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/magnanest-product-3.webp",
+            "width": 142,
+            "height": 178
+          }
         }
       ]
     },
@@ -180,27 +205,52 @@
         {
           "source": "http://127.0.0.1:4173/assets/magnanest-product-1.webp",
           "width": 500,
-          "height": 625
+          "height": 625,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/magnanest-product-1.webp",
+            "width": 500,
+            "height": 625
+          }
         },
         {
           "source": "http://127.0.0.1:4173/assets/product-studio-1122.jpg",
           "width": 1122,
-          "height": 1402
+          "height": 1402,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/product-studio-360.jpg",
+            "width": 349,
+            "height": 437
+          }
         },
         {
           "source": "http://127.0.0.1:4173/assets/magnanest-product-2.webp",
           "width": 500,
-          "height": 625
+          "height": 625,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/magnanest-product-2.webp",
+            "width": 173,
+            "height": 217
+          }
         },
         {
           "source": "http://127.0.0.1:4173/assets/product-detail-1122.jpg",
           "width": 1122,
-          "height": 1402
+          "height": 1402,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/product-detail-360.jpg",
+            "width": 349,
+            "height": 437
+          }
         },
         {
           "source": "http://127.0.0.1:4173/assets/magnanest-product-3.webp",
           "width": 500,
-          "height": 625
+          "height": 625,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/magnanest-product-3.webp",
+            "width": 173,
+            "height": 217
+          }
         }
       ]
     },
@@ -265,27 +315,52 @@
         {
           "source": "http://127.0.0.1:4173/assets/magnanest-product-1.webp",
           "width": 500,
-          "height": 625
+          "height": 625,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/magnanest-product-1.webp",
+            "width": 500,
+            "height": 625
+          }
         },
         {
           "source": "http://127.0.0.1:4173/assets/product-studio-1122.jpg",
           "width": 1122,
-          "height": 1402
+          "height": 1402,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/product-studio-360.jpg",
+            "width": 315,
+            "height": 394
+          }
         },
         {
           "source": "http://127.0.0.1:4173/assets/magnanest-product-2.webp",
           "width": 500,
-          "height": 625
+          "height": 625,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/magnanest-product-2.webp",
+            "width": 312,
+            "height": 390
+          }
         },
         {
           "source": "http://127.0.0.1:4173/assets/product-detail-1122.jpg",
           "width": 1122,
-          "height": 1402
+          "height": 1402,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/product-detail-360.jpg",
+            "width": 315,
+            "height": 394
+          }
         },
         {
           "source": "http://127.0.0.1:4173/assets/magnanest-product-3.webp",
           "width": 500,
-          "height": 625
+          "height": 625,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/magnanest-product-3.webp",
+            "width": 312,
+            "height": 390
+          }
         }
       ]
     },
@@ -350,27 +425,52 @@
         {
           "source": "http://127.0.0.1:4173/assets/magnanest-product-1.webp",
           "width": 500,
-          "height": 625
+          "height": 625,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/magnanest-product-1.webp",
+            "width": 500,
+            "height": 625
+          }
         },
         {
           "source": "http://127.0.0.1:4173/assets/product-studio-1122.jpg",
           "width": 1122,
-          "height": 1402
+          "height": 1402,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/product-studio-360.jpg",
+            "width": 345,
+            "height": 432
+          }
         },
         {
           "source": "http://127.0.0.1:4173/assets/magnanest-product-2.webp",
           "width": 500,
-          "height": 625
+          "height": 625,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/magnanest-product-2.webp",
+            "width": 342,
+            "height": 427
+          }
         },
         {
           "source": "http://127.0.0.1:4173/assets/product-detail-1122.jpg",
           "width": 1122,
-          "height": 1402
+          "height": 1402,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/product-detail-360.jpg",
+            "width": 345,
+            "height": 432
+          }
         },
         {
           "source": "http://127.0.0.1:4173/assets/magnanest-product-3.webp",
           "width": 500,
-          "height": 625
+          "height": 625,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/magnanest-product-3.webp",
+            "width": 342,
+            "height": 427
+          }
         }
       ]
     },
@@ -434,8 +534,59 @@
     },
     {
       "name": "1440px product gallery and all five enlarged images",
-      "passed": false,
-      "error": "AssertionError [ERR_ASSERTION]: The enlarged photograph should preserve the available native resolution.\n    at file:///home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:246:9\n    at async check (file:///home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:55:21)\n    at async file:///home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:225:5"
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4173/assets/magnanest-product-1.webp",
+          "width": 500,
+          "height": 625,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/magnanest-product-1.webp",
+            "width": 500,
+            "height": 625
+          }
+        },
+        {
+          "source": "http://127.0.0.1:4173/assets/product-studio-1122.jpg",
+          "width": 1122,
+          "height": 1402,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/product-studio-720.jpg",
+            "width": 499,
+            "height": 625
+          }
+        },
+        {
+          "source": "http://127.0.0.1:4173/assets/magnanest-product-2.webp",
+          "width": 500,
+          "height": 625,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/magnanest-product-2.webp",
+            "width": 641,
+            "height": 802
+          }
+        },
+        {
+          "source": "http://127.0.0.1:4173/assets/product-detail-1122.jpg",
+          "width": 1122,
+          "height": 1402,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/product-detail-720.jpg",
+            "width": 499,
+            "height": 625
+          }
+        },
+        {
+          "source": "http://127.0.0.1:4173/assets/magnanest-product-3.webp",
+          "width": 500,
+          "height": 625,
+          "displayedImage": {
+            "source": "http://127.0.0.1:4173/assets/magnanest-product-3.webp",
+            "width": 641,
+            "height": 802
+          }
+        }
+      ]
     },
     {
       "name": "1-shelf cart and correct Stripe checkout destination",
@@ -594,29 +745,38 @@
       }
     },
     {
+      "name": "320×568px cart checkout remains reachable and the optional upgrade works",
+      "passed": true,
+      "details": {
+        "top": 257.5625,
+        "bottom": 309.5625,
+        "left": 16,
+        "right": 304,
+        "width": 288,
+        "height": 52,
+        "viewportWidth": 320,
+        "viewportHeight": 568,
+        "drawerTop": 0,
+        "drawerBottom": 568,
+        "drawerScrollTop": 401,
+        "unobstructed": true,
+        "beforeUpsell": true
+      }
+    },
+    {
       "name": "Optional bundle promotion upgrades one shelf to the approved duo",
       "passed": true
     },
     {
       "name": "Below-fold content appears while scrolling with motion enabled",
-      "passed": false,
-      "error": "page.waitForFunction: Timeout 7000ms exceeded.\n    at /home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:394:18\n    at async check (/home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:55:21)\n    at async file:///home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:389:5"
+      "passed": true
     },
     {
       "name": "Browsing promotion remains dismissible",
       "passed": true
     }
   ],
-  "errors": [
-    {
-      "name": "1440px product gallery and all five enlarged images",
-      "error": "AssertionError [ERR_ASSERTION]: The enlarged photograph should preserve the available native resolution.\n    at file:///home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:246:9\n    at async check (file:///home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:55:21)\n    at async file:///home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:225:5"
-    },
-    {
-      "name": "Below-fold content appears while scrolling with motion enabled",
-      "error": "page.waitForFunction: Timeout 7000ms exceeded.\n    at /home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:394:18\n    at async check (/home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:55:21)\n    at async file:///home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:389:5"
-    }
-  ],
+  "errors": [],
   "screenshots": [
     "review/storefront-320.jpg",
     "review/storefront-390.jpg",
@@ -631,7 +791,8 @@
     "review/usage-1440.jpg",
     "review/offer-390.jpg",
     "review/cart-390.jpg",
+    "review/cart-320-short.jpg",
     "review/promo-390.jpg"
   ],
-  "passed": false
+  "passed": true
 }
