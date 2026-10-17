@@ -1,4 +1,4 @@
-name: Storefront browser review
+name: Catalog storefront review
 on:
   push:
     branches:
@@ -9,7 +9,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: magnanest-storefront-review
+  group: magnanest-catalog-review
   cancel-in-progress: true
 jobs:
   browser-review:
@@ -23,18 +23,23 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install browser test dependencies
+      - name: Build the static storefront
+        run: node scripts/build-cloudflare.mjs
+      - name: Package and verify the ready-to-upload website
+        run: |
+          mkdir -p review
+          rm -f review/magnanest-cloudflare-upload.zip
+          cd dist
+          zip -q -r ../review/magnanest-cloudflare-upload.zip .
+          cd ..
+          unzip -t review/magnanest-cloudflare-upload.zip > review/upload-package.txt
+      - name: Install browser dependencies
         run: |
           npm install --no-save --ignore-scripts playwright@1.56.1
           npx playwright install --with-deps chromium
-      - name: Build Cloudflare upload
-        run: node scripts/build-cloudflare.mjs
-      - name: Review rendered storefront
+      - name: Review the product, promotions and checkout navigation
         run: node tools/browser-check.mjs
-      - name: Inspect current Cloudflare deployment
-        if: always()
-        run: node tools/probe-live.mjs
-      - name: Record screenshots and browser results
+      - name: Record screenshots, results and the upload package
         if: always()
         run: |
           if [ ! -d review ]; then exit 0; fi
@@ -42,5 +47,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add review
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m "[skip ci] Record browser review"
+          git commit -m "[skip ci] Record catalog storefront review"
           git push origin HEAD:magnanest-rebuild-review
