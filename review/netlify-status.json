@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-16T22:03:59.252Z",
+  "checkedAt": "2026-10-17T06:22:40.933Z",
   "origin": "https://magnanest.netlify.app",
   "commit": "3bc359a070e7636536bec997f899fb45be57015e",
   "files": [
@@ -12,7 +12,7 @@
       "headers": {
         "server": "Netlify",
         "etag": "\"a26259733d6f26c19c010b9c68511bc8-ssl-df\"",
-        "x-nf-request-id": "01M53BWKF0Y1YQGE214AGKAWA0"
+        "x-nf-request-id": "01M548DQWJQYVAFM7S000SRPZV"
       },
       "title": "MagnaNest — Space that sticks.",
       "hasRebuiltHero": false,
@@ -27,7 +27,7 @@
       "headers": {
         "server": "Netlify",
         "etag": "\"acd3a096447653d76e260317ceb732e2-ssl-df\"",
-        "x-nf-request-id": "01M53BWKF21YRQYKJG0ENW4J5N"
+        "x-nf-request-id": "01M548DQXD3C343PPFTJADXMBJ"
       }
     },
     {
@@ -39,7 +39,7 @@
       "headers": {
         "server": "Netlify",
         "etag": "\"38c893a5804550411a572feccd795676-ssl-df\"",
-        "x-nf-request-id": "01M53BWKEXKWTB9GAX67WS2CQJ"
+        "x-nf-request-id": "01M548DQW4D35DYVPGMXRKJDW5"
       }
     },
     {
@@ -51,7 +51,7 @@
       "headers": {
         "server": "Netlify",
         "etag": "1790217579-ssl-df",
-        "x-nf-request-id": "01M53BWKEVHR2EFFJS249KFCST"
+        "x-nf-request-id": "01M548DQWWNMHANERC6T64ATVT"
       }
     },
     {
@@ -63,7 +63,7 @@
       "headers": {
         "server": "Netlify",
         "etag": "1790217579-ssl-df",
-        "x-nf-request-id": "01M53BWKF1TMDK2F1G5YKB9X6K"
+        "x-nf-request-id": "01M548DQWBTM7N6S0QXTR4KJY3"
       }
     }
   ],

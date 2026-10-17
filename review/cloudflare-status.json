@@ -1,48 +1,46 @@
 {
-  "checkedAt": "2026-10-16T22:03:59.044Z",
+  "checkedAt": "2026-10-17T06:22:40.793Z",
   "origin": "https://magnanest.pages.dev",
   "commit": "3bc359a070e7636536bec997f899fb45be57015e",
   "files": [
     {
       "file": "index.html",
-      "status": 200,
+      "status": 530,
       "url": "https://magnanest.pages.dev/",
-      "bytes": 15829,
+      "bytes": 8255,
       "matches": false,
       "headers": {
         "server": "cloudflare"
       },
-      "title": "MagnaNest — Space that sticks.",
+      "title": "Origin DNS error | magnanest.pages.dev | Cloudflare",
       "hasRebuiltHero": false,
       "hasNewImagery": false
     },
     {
       "file": "styles.css",
-      "status": 200,
+      "status": 530,
       "url": "https://magnanest.pages.dev/styles.css",
-      "bytes": 27529,
+      "bytes": 8255,
       "matches": false,
       "headers": {
-        "server": "cloudflare",
-        "etag": "W/\"50c9e6484a3f9351207792b3a538e51c\""
+        "server": "cloudflare"
       }
     },
     {
       "file": "app.js",
-      "status": 200,
+      "status": 530,
       "url": "https://magnanest.pages.dev/app.js",
-      "bytes": 10586,
+      "bytes": 8255,
       "matches": false,
       "headers": {
-        "server": "cloudflare",
-        "etag": "W/\"c84037f7bca3e81c966319e108fb1d50\""
+        "server": "cloudflare"
       }
     },
     {
       "file": "checkout-config.js",
-      "status": 404,
+      "status": 530,
       "url": "https://magnanest.pages.dev/checkout-config.js",
-      "bytes": 850,
+      "bytes": 8255,
       "matches": false,
       "headers": {
         "server": "cloudflare"
@@ -50,9 +48,9 @@
     },
     {
       "file": "assets/editorial-kitchen-720.jpg",
-      "status": 404,
+      "status": 522,
       "url": "https://magnanest.pages.dev/assets/editorial-kitchen-720.jpg",
-      "bytes": 850,
+      "bytes": 7271,
       "matches": false,
       "headers": {
         "server": "cloudflare"

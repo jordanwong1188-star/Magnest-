@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-16T22:03:59.245Z",
+  "checkedAt": "2026-10-17T06:22:40.937Z",
   "origin": "https://deploy-preview-1--magnanest.netlify.app",
   "commit": "3bc359a070e7636536bec997f899fb45be57015e",
   "files": [
@@ -12,7 +12,7 @@
       "headers": {
         "server": "Netlify",
         "etag": "\"1e01ab05c58ca523bc54b41b074796a7-ssl-df\"",
-        "x-nf-request-id": "01M53BWKF4C02S07N5TTPN89Z2"
+        "x-nf-request-id": "01M548DQXDT41WDG77G9ADKB05"
       },
       "title": "MagnaNest — Your counter. Cleared.",
       "hasRebuiltHero": true,
@@ -20,8 +20,15 @@
     },
     {
       "file": "styles.css",
-      "error": "TypeError: fetch failed",
-      "matches": false
+      "status": 200,
+      "url": "https://deploy-preview-1--magnanest.netlify.app/styles.css",
+      "bytes": 55400,
+      "matches": true,
+      "headers": {
+        "server": "Netlify",
+        "etag": "\"9112ecd40ecc9ae84f94e6895a4f5478-ssl-df\"",
+        "x-nf-request-id": "01M548DQWPMWK4Z1SZTYXKFT9N"
+      }
     },
     {
       "file": "app.js",
@@ -32,7 +39,7 @@
       "headers": {
         "server": "Netlify",
         "etag": "\"12027f02eb5d9ef3b6459a1ccf6120a0-ssl-df\"",
-        "x-nf-request-id": "01M53BWKEMP2556D6NS4X9Q5Y7"
+        "x-nf-request-id": "01M548DQWSZ3GKQTY8YTZ66KK3"
       }
     },
     {
@@ -44,7 +51,7 @@
       "headers": {
         "server": "Netlify",
         "etag": "\"b0e1b0778b55406dfbcdcb1e2a249057-ssl\"",
-        "x-nf-request-id": "01M53BWKEQ26AXCWB0QCA6QKJB"
+        "x-nf-request-id": "01M548DQWPYVQ82TNBA6MP1MDD"
       }
     },
     {
@@ -56,7 +63,7 @@
       "headers": {
         "server": "Netlify",
         "etag": "\"5be55aca730f37b3e5df1d12f8e1eacc-ssl\"",
-        "x-nf-request-id": "01M53BWKENPKPDJAMS12A7Z6MD"
+        "x-nf-request-id": "01M548DQXNDGGKYRKE1BAQ6AHY"
       }
     }
   ],

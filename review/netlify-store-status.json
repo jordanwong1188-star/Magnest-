@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-16T22:03:59.251Z",
+  "checkedAt": "2026-10-17T06:22:40.937Z",
   "origin": "https://magnanest-store.netlify.app",
   "commit": "3bc359a070e7636536bec997f899fb45be57015e",
   "files": [
@@ -12,7 +12,7 @@
       "headers": {
         "server": "Netlify",
         "etag": "\"39176823b5f0dc6707c0c626eae0ff5b-ssl-df\"",
-        "x-nf-request-id": "01M53BWKF422R6742VPXJZC59C"
+        "x-nf-request-id": "01M548DQX2Y6M5M6YX6Y10MZ68"
       },
       "title": "MagnaNest — A little shelf. A lot more space.",
       "hasRebuiltHero": false,
@@ -27,7 +27,7 @@
       "headers": {
         "server": "Netlify",
         "etag": "\"7dd4db7f18e0bfb5177385c3f13278c1-ssl-df\"",
-        "x-nf-request-id": "01M53BWKF6XKJ2AQ4TQJSSDKEG"
+        "x-nf-request-id": "01M548DQWWZ0K0TBTRH5QZ4J1N"
       }
     },
     {
@@ -39,7 +39,7 @@
       "headers": {
         "server": "Netlify",
         "etag": "\"556c0f7775398f20737ef36d6a711b0c-ssl-df\"",
-        "x-nf-request-id": "01M53BWKF2H22BJ5CJBQD2X5MY"
+        "x-nf-request-id": "01M548DQX572A18RXGTM2BDFQC"
       }
     },
     {
@@ -51,7 +51,7 @@
       "headers": {
         "server": "Netlify",
         "etag": "\"fbb2494359e27fba3cab139e146050ed-ssl\"",
-        "x-nf-request-id": "01M53BWKF80XWCJNYN7ER2SK4C"
+        "x-nf-request-id": "01M548DQXWMAQKJE4HW5FNV59Z"
       }
     },
     {
@@ -63,7 +63,7 @@
       "headers": {
         "server": "Netlify",
         "etag": "1790216684-ssl-df",
-        "x-nf-request-id": "01M53BWKF9C0FC4418K5X237T5"
+        "x-nf-request-id": "01M548DQXC58ZQ5DSW8KW5WYWX"
       }
     }
   ],
