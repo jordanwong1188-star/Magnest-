@@ -1,4 +1,4 @@
-name: Live preview verification
+name: Catalog storefront review
 on:
   push:
     branches:
@@ -9,13 +9,13 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: magnanest-live-preview
+  group: magnanest-catalog-review
   cancel-in-progress: true
 jobs:
-  live-preview:
+  browser-review:
     if: github.ref == 'refs/heads/magnanest-rebuild-review'
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
         with:
@@ -23,112 +23,29 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Build expected site files
+      - name: Build the static storefront
         run: node scripts/build-cloudflare.mjs
-      - name: Install the preview browser
+      - name: Package and verify the ready-to-upload website
+        run: |
+          mkdir -p review
+          rm -f review/magnanest-cloudflare-upload.zip
+          cd dist
+          zip -q -r ../review/magnanest-cloudflare-upload.zip .
+          cd ..
+          unzip -t review/magnanest-cloudflare-upload.zip > review/upload-package.txt
+      - name: Install browser dependencies
         run: |
           npm install --no-save --ignore-scripts playwright@1.56.1
           npx playwright install --with-deps chromium
-      - name: Verify the live preview and upload package
-        run: |
-          node --input-type=module <<'NODE'
-          import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
-          import { createHash } from 'node:crypto';
-          import { execFile } from 'node:child_process';
-          import { promisify } from 'node:util';
-          import { setTimeout } from 'node:timers/promises';
-          import assert from 'node:assert/strict';
-          import { chromium } from 'playwright';
-          const origin = 'https://deploy-preview-1--magnanest.netlify.app';
-          const result = { origin, checkedAt: new Date().toISOString(), commit: process.env.GITHUB_SHA, css: { attempts: [], matchesBuild: false }, errors: [], passed: false };
-          const sha = body => createHash('sha256').update(body).digest('hex');
-          await mkdir('review', { recursive: true });
-          let browser;
-          let page;
-          try {
-            const runFile = promisify(execFile);
-            const packagePath = 'review/magnanest-cloudflare-upload.zip';
-            const tested = await runFile('unzip', ['-t', packagePath]);
-            const listed = await runFile('unzip', ['-Z1', packagePath]);
-            await writeFile('review/upload-package.txt', tested.stdout + '\nPACKAGE CONTENTS\n' + listed.stdout);
-            const entries = listed.stdout.trim().split('\n').map(name => name.replace(/^\.\//, ''));
-            for (const required of ['index.html', 'styles.css', 'app.js', 'checkout-config.js', 'assets/editorial-kitchen-720.jpg']) {
-              assert(entries.includes(required), 'Missing upload root file: ' + required);
-            }
-            result.uploadPackage = { verified: true, bytes: (await stat(packagePath)).size, entries: entries.length };
-            const expectedCss = await readFile('dist/styles.css');
-            for (let attempt = 1; attempt <= 3; attempt++) {
-              try {
-                const response = await fetch(origin + '/styles.css', { signal: AbortSignal.timeout(30000), headers: { 'Cache-Control': 'no-cache' } });
-                const body = Buffer.from(await response.arrayBuffer());
-                const matches = response.ok && sha(body) === sha(expectedCss);
-                result.css.attempts.push({ attempt, status: response.status, bytes: body.length, matchesBuild: matches });
-                if (matches) { result.css.matchesBuild = true; break; }
-              } catch (error) {
-                result.css.attempts.push({ attempt, error: String(error) });
-              }
-              if (attempt < 3) await setTimeout(1000);
-            }
-            if (!result.css.matchesBuild) result.errors.push('The preview stylesheet did not match the expected build after three attempts.');
-            browser = await chromium.launch();
-            const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce', deviceScaleFactor: 1 });
-            page = await context.newPage();
-            page.setDefaultTimeout(20000);
-            page.on('pageerror', error => result.errors.push(String(error.stack || error)));
-            await page.goto(origin + '/', { waitUntil: 'domcontentloaded', timeout: 60000 });
-            result.title = await page.title();
-            const heading = (await page.locator('.hero h1').innerText()).replace(/\s+/g, ' ').trim();
-            assert(heading.includes('Your counter.') && heading.includes('Cleared.'), 'The rebuilt hero is missing.');
-            result.heading = heading;
-            const height = await page.evaluate(() => document.documentElement.scrollHeight);
-            for (let top = 0; top < height; top += 650) {
-              await page.evaluate(y => window.scrollTo(0, y), top);
-              await page.waitForTimeout(40);
-            }
-            await page.waitForFunction(() => [...document.images].every(image => !image.getClientRects().length || (image.complete && image.naturalWidth > 0)), { timeout: 20000 });
-            result.images = await page.locator('img').evaluateAll(images => images.filter(image => image.getClientRects().length).map(image => ({ source: image.currentSrc, width: image.naturalWidth, height: image.naturalHeight })));
-            assert(result.images.length >= 10, 'The expected product images are missing.');
-            const layout = await page.evaluate(() => {
-              const body = getComputedStyle(document.body);
-              const h1 = getComputedStyle(document.querySelector('.hero h1'));
-              const photo = document.querySelector('.hero-photo').getBoundingClientRect();
-              return { width: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth, background: body.backgroundColor, font: body.fontFamily, headingSize: h1.fontSize, heroRatio: photo.width / photo.height };
-            });
-            result.layout = layout;
-            assert(layout.scrollWidth <= layout.width + 1, 'Horizontal page overflow.');
-            assert(layout.font.includes('Manrope'), 'Expected typography is not applied.');
-            assert(parseFloat(layout.headingSize) >= 48, 'Hero typography is unstyled.');
-            assert(Math.abs(layout.heroRatio - 0.8) < 0.03, 'Hero photograph proportions are incorrect.');
-            assert(!['rgba(0, 0, 0, 0)', 'rgb(255, 255, 255)'].includes(layout.background), 'The expected background colour is not applied.');
-            await page.evaluate(() => window.scrollTo(0, 0));
-            if (await page.locator('#promoClose').isVisible()) await page.locator('#promoClose').click();
-            await page.waitForTimeout(150);
-            for (const quality of [70, 55, 40, 28]) {
-              await page.screenshot({ path: 'review/live-preview-390.jpg', fullPage: true, type: 'jpeg', quality });
-              if ((await stat('review/live-preview-390.jpg')).size < 950000) break;
-            }
-            result.screenshot = 'review/live-preview-390.jpg';
-          } catch (error) {
-            result.errors.push(String(error.stack || error));
-            if (page) {
-              try { await page.screenshot({ path: 'review/live-preview-390.jpg', fullPage: true, type: 'jpeg', quality: 55 }); } catch {}
-            }
-          } finally {
-            if (browser) await browser.close();
-            result.passed = result.errors.length === 0 && result.css.matchesBuild && result.uploadPackage?.verified === true;
-            await writeFile('review/live-preview-status.json', JSON.stringify(result, null, 2) + '\n');
-            console.log(JSON.stringify(result, null, 2));
-            if (!result.passed) process.exitCode = 1;
-          }
-          NODE
-      - name: Record verified preview and package inventory
+      - name: Review the product, promotions and checkout navigation
+        run: node tools/browser-check.mjs
+      - name: Record screenshots, results and the upload package
         if: always()
         run: |
-          for review_file in review/live-preview-390.jpg review/live-preview-status.json review/upload-package.txt; do
-            if [ -f "$review_file" ]; then git add "$review_file"; fi
-          done
-          if git diff --cached --quiet; then exit 0; fi
+          if [ ! -d review ]; then exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "[skip ci] Record live preview verification"
+          git add review
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "[skip ci] Record catalog storefront review"
           git push origin HEAD:magnanest-rebuild-review
