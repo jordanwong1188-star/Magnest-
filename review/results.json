@@ -1,72 +1,73 @@
 {
-  "testedAt": "2026-10-16T21:57:21.782Z",
-  "commit": "10c9068617a151263c557d0650b31f78faf3ea99",
+  "testedAt": "2026-10-17T06:38:40.886Z",
+  "commit": "c80ce859ed6e1818cc1ce64968e51ad076a2ad65",
   "checks": [
+    {
+      "name": "320px reduced-motion content remains visible",
+      "passed": true,
+      "details": {
+        "hiddenRevealElements": 0
+      }
+    },
     {
       "name": "320px responsive layout and images",
       "passed": true,
       "details": {
         "viewport": 320,
         "scroll": 320,
-        "overflowing": [
+        "overflowing": []
+      }
+    },
+    {
+      "name": "320px product presentation and readable purchase controls",
+      "passed": true,
+      "details": {
+        "usageImage": {
+          "width": 288,
+          "height": 360,
+          "naturalWidth": 360,
+          "naturalHeight": 450
+        },
+        "controls": [
           {
-            "tag": "DIV",
             "id": "",
-            "className": "wordmark",
-            "left": -33.9453125,
-            "right": 353.9453125
+            "quantity": "1",
+            "height": 104.78125,
+            "fontSize": 16
+          },
+          {
+            "id": "",
+            "quantity": "2",
+            "height": 104.78125,
+            "fontSize": 16
+          },
+          {
+            "id": "",
+            "quantity": "3",
+            "height": 104.78125,
+            "fontSize": 16
+          },
+          {
+            "id": "addToCart",
+            "quantity": null,
+            "height": 52,
+            "fontSize": 15
           }
         ]
       }
     },
     {
-      "name": "320px product photograph aspect ratios",
+      "name": "320px product name and price appear before the gallery",
       "passed": true,
       "details": {
-        "thumbnails": [
-          {
-            "width": 50,
-            "height": 50,
-            "source": "http://127.0.0.1:4173/assets/product-studio-360.jpg"
-          },
-          {
-            "width": 50,
-            "height": 50,
-            "source": "http://127.0.0.1:4173/assets/editorial-kitchen-360.jpg"
-          },
-          {
-            "width": 50,
-            "height": 50,
-            "source": "http://127.0.0.1:4173/assets/product-front-360.jpg"
-          },
-          {
-            "width": 50,
-            "height": 50,
-            "source": "http://127.0.0.1:4173/assets/product-detail-360.jpg"
-          },
-          {
-            "width": 50,
-            "height": 50,
-            "source": "http://127.0.0.1:4173/assets/editorial-coffee-360.jpg"
-          }
-        ],
-        "storyImages": [
-          {
-            "width": 288,
-            "height": 360,
-            "source": "http://127.0.0.1:4173/assets/editorial-kitchen-360.jpg"
-          },
-          {
-            "width": 137.5,
-            "height": 171.875,
-            "source": "http://127.0.0.1:4173/assets/editorial-coffee-360.jpg"
-          },
-          {
-            "width": 137.5,
-            "height": 171.875,
-            "source": "http://127.0.0.1:4173/assets/product-detail-360.jpg"
-          }
-        ]
+        "titleTop": 181,
+        "titleBottom": 253.3125,
+        "priceTop": 333.09375,
+        "priceBottom": 363.890625,
+        "galleryTop": 387.890625,
+        "viewportHeight": 844,
+        "frameWidth": 288,
+        "frameHeight": 288
       }
     },
     {
@@ -74,19 +75,19 @@
       "passed": true,
       "details": [
         {
+          "source": "http://127.0.0.1:4173/assets/magnanest-product-1.webp",
+          "width": 500,
+          "height": 625
+        },
+        {
           "source": "http://127.0.0.1:4173/assets/product-studio-1122.jpg",
           "width": 1122,
           "height": 1402
         },
         {
-          "source": "http://127.0.0.1:4173/assets/editorial-kitchen-1122.jpg",
-          "width": 1122,
-          "height": 1402
-        },
-        {
-          "source": "http://127.0.0.1:4173/assets/product-front-1122.jpg",
-          "width": 1122,
-          "height": 1402
+          "source": "http://127.0.0.1:4173/assets/magnanest-product-2.webp",
+          "width": 500,
+          "height": 625
         },
         {
           "source": "http://127.0.0.1:4173/assets/product-detail-1122.jpg",
@@ -94,11 +95,18 @@
           "height": 1402
         },
         {
-          "source": "http://127.0.0.1:4173/assets/editorial-coffee-1122.jpg",
-          "width": 1122,
-          "height": 1402
+          "source": "http://127.0.0.1:4173/assets/magnanest-product-3.webp",
+          "width": 500,
+          "height": 625
         }
       ]
+    },
+    {
+      "name": "390px reduced-motion content remains visible",
+      "passed": true,
+      "details": {
+        "hiddenRevealElements": 0
+      }
     },
     {
       "name": "390px responsive layout and images",
@@ -106,69 +114,63 @@
       "details": {
         "viewport": 390,
         "scroll": 390,
-        "overflowing": [
-          {
-            "tag": "DIV",
-            "id": "",
-            "className": "wordmark",
-            "left": -40.8828125,
-            "right": 430.8828125
-          }
-        ]
+        "overflowing": []
       }
     },
     {
-      "name": "390px product photograph aspect ratios",
+      "name": "390px product presentation and readable purchase controls",
       "passed": true,
       "details": {
-        "thumbnails": [
+        "usageImage": {
+          "width": 350,
+          "height": 437.5,
+          "naturalWidth": 360,
+          "naturalHeight": 450
+        },
+        "controls": [
           {
-            "width": 62.390625,
-            "height": 62.390625,
-            "source": "http://127.0.0.1:4173/assets/product-studio-360.jpg"
+            "id": "",
+            "quantity": "1",
+            "height": 86,
+            "fontSize": 16
           },
           {
-            "width": 62.40625,
-            "height": 62.40625,
-            "source": "http://127.0.0.1:4173/assets/editorial-kitchen-360.jpg"
+            "id": "",
+            "quantity": "2",
+            "height": 86,
+            "fontSize": 16
           },
           {
-            "width": 62.390625,
-            "height": 62.390625,
-            "source": "http://127.0.0.1:4173/assets/product-front-360.jpg"
+            "id": "",
+            "quantity": "3",
+            "height": 86,
+            "fontSize": 16
           },
           {
-            "width": 62.40625,
-            "height": 62.40625,
-            "source": "http://127.0.0.1:4173/assets/product-detail-360.jpg"
-          },
-          {
-            "width": 62.40625,
-            "height": 62.40625,
-            "source": "http://127.0.0.1:4173/assets/editorial-coffee-360.jpg"
-          }
-        ],
-        "storyImages": [
-          {
-            "width": 350,
-            "height": 437.5,
-            "source": "http://127.0.0.1:4173/assets/editorial-kitchen-360.jpg"
-          },
-          {
-            "width": 168.5,
-            "height": 210.625,
-            "source": "http://127.0.0.1:4173/assets/editorial-coffee-360.jpg"
-          },
-          {
-            "width": 168.5,
-            "height": 210.625,
-            "source": "http://127.0.0.1:4173/assets/product-detail-360.jpg"
+            "id": "addToCart",
+            "quantity": null,
+            "height": 52,
+            "fontSize": 15
           }
         ]
       }
     },
     {
-      "name": "390px section screenshots",
+      "name": "390px product name and price appear before the gallery",
+      "passed": true,
+      "details": {
+        "titleTop": 181,
+        "titleBottom": 257.8125,
+        "priceTop": 337.59375,
+        "priceBottom": 368.390625,
+        "galleryTop": 392.390625,
+        "viewportHeight": 844,
+        "frameWidth": 350,
+        "frameHeight": 350
+      }
+    },
+    {
+      "name": "390px product and usage screenshots",
       "passed": true
     },
     {
@@ -176,19 +178,19 @@
       "passed": true,
       "details": [
         {
+          "source": "http://127.0.0.1:4173/assets/magnanest-product-1.webp",
+          "width": 500,
+          "height": 625
+        },
+        {
           "source": "http://127.0.0.1:4173/assets/product-studio-1122.jpg",
           "width": 1122,
           "height": 1402
         },
         {
-          "source": "http://127.0.0.1:4173/assets/editorial-kitchen-1122.jpg",
-          "width": 1122,
-          "height": 1402
-        },
-        {
-          "source": "http://127.0.0.1:4173/assets/product-front-1122.jpg",
-          "width": 1122,
-          "height": 1402
+          "source": "http://127.0.0.1:4173/assets/magnanest-product-2.webp",
+          "width": 500,
+          "height": 625
         },
         {
           "source": "http://127.0.0.1:4173/assets/product-detail-1122.jpg",
@@ -196,11 +198,18 @@
           "height": 1402
         },
         {
-          "source": "http://127.0.0.1:4173/assets/editorial-coffee-1122.jpg",
-          "width": 1122,
-          "height": 1402
+          "source": "http://127.0.0.1:4173/assets/magnanest-product-3.webp",
+          "width": 500,
+          "height": 625
         }
       ]
+    },
+    {
+      "name": "701px reduced-motion content remains visible",
+      "passed": true,
+      "details": {
+        "hiddenRevealElements": 0
+      }
     },
     {
       "name": "701px responsive layout and images",
@@ -212,51 +221,39 @@
       }
     },
     {
-      "name": "701px product photograph aspect ratios",
+      "name": "701px product presentation and readable purchase controls",
       "passed": true,
       "details": {
-        "thumbnails": [
+        "usageImage": {
+          "width": 272.25,
+          "height": 340.3125,
+          "naturalWidth": 360,
+          "naturalHeight": 450
+        },
+        "controls": [
           {
-            "width": 55.59375,
-            "height": 55.59375,
-            "source": "http://127.0.0.1:4173/assets/product-studio-360.jpg"
+            "id": "",
+            "quantity": "1",
+            "height": 102.78125,
+            "fontSize": 16
           },
           {
-            "width": 55.59375,
-            "height": 55.59375,
-            "source": "http://127.0.0.1:4173/assets/editorial-kitchen-360.jpg"
+            "id": "",
+            "quantity": "2",
+            "height": 102.78125,
+            "fontSize": 16
           },
           {
-            "width": 55.609375,
-            "height": 55.609375,
-            "source": "http://127.0.0.1:4173/assets/product-front-360.jpg"
+            "id": "",
+            "quantity": "3",
+            "height": 102.78125,
+            "fontSize": 16
           },
           {
-            "width": 55.59375,
-            "height": 55.59375,
-            "source": "http://127.0.0.1:4173/assets/product-detail-360.jpg"
-          },
-          {
-            "width": 55.59375,
-            "height": 55.59375,
-            "source": "http://127.0.0.1:4173/assets/editorial-coffee-360.jpg"
-          }
-        ],
-        "storyImages": [
-          {
-            "width": 246.984375,
-            "height": 308.71875,
-            "source": "http://127.0.0.1:4173/assets/editorial-kitchen-360.jpg"
-          },
-          {
-            "width": 190,
-            "height": 237.5,
-            "source": "http://127.0.0.1:4173/assets/editorial-coffee-360.jpg"
-          },
-          {
-            "width": 190,
-            "height": 237.5,
-            "source": "http://127.0.0.1:4173/assets/product-detail-360.jpg"
+            "id": "addToCart",
+            "quantity": null,
+            "height": 52,
+            "fontSize": 15
           }
         ]
       }
@@ -266,19 +263,19 @@
       "passed": true,
       "details": [
         {
+          "source": "http://127.0.0.1:4173/assets/magnanest-product-1.webp",
+          "width": 500,
+          "height": 625
+        },
+        {
           "source": "http://127.0.0.1:4173/assets/product-studio-1122.jpg",
           "width": 1122,
           "height": 1402
         },
         {
-          "source": "http://127.0.0.1:4173/assets/editorial-kitchen-1122.jpg",
-          "width": 1122,
-          "height": 1402
-        },
-        {
-          "source": "http://127.0.0.1:4173/assets/product-front-1122.jpg",
-          "width": 1122,
-          "height": 1402
+          "source": "http://127.0.0.1:4173/assets/magnanest-product-2.webp",
+          "width": 500,
+          "height": 625
         },
         {
           "source": "http://127.0.0.1:4173/assets/product-detail-1122.jpg",
@@ -286,11 +283,18 @@
           "height": 1402
         },
         {
-          "source": "http://127.0.0.1:4173/assets/editorial-coffee-1122.jpg",
-          "width": 1122,
-          "height": 1402
+          "source": "http://127.0.0.1:4173/assets/magnanest-product-3.webp",
+          "width": 500,
+          "height": 625
         }
       ]
+    },
+    {
+      "name": "768px reduced-motion content remains visible",
+      "passed": true,
+      "details": {
+        "hiddenRevealElements": 0
+      }
     },
     {
       "name": "768px responsive layout and images",
@@ -302,51 +306,39 @@
       }
     },
     {
-      "name": "768px product photograph aspect ratios",
+      "name": "768px product presentation and readable purchase controls",
       "passed": true,
       "details": {
-        "thumbnails": [
+        "usageImage": {
+          "width": 302.390625,
+          "height": 377.984375,
+          "naturalWidth": 360,
+          "naturalHeight": 450
+        },
+        "controls": [
           {
-            "width": 62.296875,
-            "height": 62.296875,
-            "source": "http://127.0.0.1:4173/assets/product-studio-360.jpg"
+            "id": "",
+            "quantity": "1",
+            "height": 82,
+            "fontSize": 16
           },
           {
-            "width": 62.296875,
-            "height": 62.296875,
-            "source": "http://127.0.0.1:4173/assets/editorial-kitchen-360.jpg"
+            "id": "",
+            "quantity": "2",
+            "height": 82,
+            "fontSize": 16
           },
           {
-            "width": 62.296875,
-            "height": 62.296875,
-            "source": "http://127.0.0.1:4173/assets/product-front-360.jpg"
+            "id": "",
+            "quantity": "3",
+            "height": 82,
+            "fontSize": 16
           },
           {
-            "width": 62.296875,
-            "height": 62.296875,
-            "source": "http://127.0.0.1:4173/assets/product-detail-360.jpg"
-          },
-          {
-            "width": 62.3125,
-            "height": 62.3125,
-            "source": "http://127.0.0.1:4173/assets/editorial-coffee-360.jpg"
-          }
-        ],
-        "storyImages": [
-          {
-            "width": 273.390625,
-            "height": 341.734375,
-            "source": "http://127.0.0.1:4173/assets/editorial-kitchen-360.jpg"
-          },
-          {
-            "width": 210.296875,
-            "height": 262.859375,
-            "source": "http://127.0.0.1:4173/assets/editorial-coffee-360.jpg"
-          },
-          {
-            "width": 210.3125,
-            "height": 262.890625,
-            "source": "http://127.0.0.1:4173/assets/product-detail-360.jpg"
+            "id": "addToCart",
+            "quantity": null,
+            "height": 52,
+            "fontSize": 15
           }
         ]
       }
@@ -356,19 +348,19 @@
       "passed": true,
       "details": [
         {
+          "source": "http://127.0.0.1:4173/assets/magnanest-product-1.webp",
+          "width": 500,
+          "height": 625
+        },
+        {
           "source": "http://127.0.0.1:4173/assets/product-studio-1122.jpg",
           "width": 1122,
           "height": 1402
         },
         {
-          "source": "http://127.0.0.1:4173/assets/editorial-kitchen-1122.jpg",
-          "width": 1122,
-          "height": 1402
-        },
-        {
-          "source": "http://127.0.0.1:4173/assets/product-front-1122.jpg",
-          "width": 1122,
-          "height": 1402
+          "source": "http://127.0.0.1:4173/assets/magnanest-product-2.webp",
+          "width": 500,
+          "height": 625
         },
         {
           "source": "http://127.0.0.1:4173/assets/product-detail-1122.jpg",
@@ -376,11 +368,18 @@
           "height": 1402
         },
         {
-          "source": "http://127.0.0.1:4173/assets/editorial-coffee-1122.jpg",
-          "width": 1122,
-          "height": 1402
+          "source": "http://127.0.0.1:4173/assets/magnanest-product-3.webp",
+          "width": 500,
+          "height": 625
         }
       ]
+    },
+    {
+      "name": "1440px reduced-motion content remains visible",
+      "passed": true,
+      "details": {
+        "hiddenRevealElements": 0
+      }
     },
     {
       "name": "1440px responsive layout and images",
@@ -392,89 +391,51 @@
       }
     },
     {
-      "name": "1440px product photograph aspect ratios",
+      "name": "1440px product presentation and readable purchase controls",
       "passed": true,
       "details": {
-        "thumbnails": [
+        "usageImage": {
+          "width": 360,
+          "height": 450,
+          "naturalWidth": 360,
+          "naturalHeight": 450
+        },
+        "controls": [
           {
-            "width": 112.84375,
-            "height": 112.84375,
-            "source": "http://127.0.0.1:4173/assets/product-studio-360.jpg"
+            "id": "",
+            "quantity": "1",
+            "height": 82,
+            "fontSize": 16
           },
           {
-            "width": 112.84375,
-            "height": 112.84375,
-            "source": "http://127.0.0.1:4173/assets/editorial-kitchen-360.jpg"
+            "id": "",
+            "quantity": "2",
+            "height": 82,
+            "fontSize": 16
           },
           {
-            "width": 112.84375,
-            "height": 112.84375,
-            "source": "http://127.0.0.1:4173/assets/product-front-360.jpg"
+            "id": "",
+            "quantity": "3",
+            "height": 82,
+            "fontSize": 16
           },
           {
-            "width": 112.84375,
-            "height": 112.84375,
-            "source": "http://127.0.0.1:4173/assets/product-detail-360.jpg"
-          },
-          {
-            "width": 112.859375,
-            "height": 112.859375,
-            "source": "http://127.0.0.1:4173/assets/editorial-coffee-360.jpg"
-          }
-        ],
-        "storyImages": [
-          {
-            "width": 488.484375,
-            "height": 610.59375,
-            "source": "http://127.0.0.1:4173/assets/editorial-kitchen-720.jpg"
-          },
-          {
-            "width": 375.75,
-            "height": 469.6875,
-            "source": "http://127.0.0.1:4173/assets/editorial-coffee-360.jpg"
-          },
-          {
-            "width": 375.75,
-            "height": 469.6875,
-            "source": "http://127.0.0.1:4173/assets/product-detail-360.jpg"
+            "id": "addToCart",
+            "quantity": null,
+            "height": 52,
+            "fontSize": 15
           }
         ]
       }
     },
     {
-      "name": "1440px section screenshots",
+      "name": "1440px product and usage screenshots",
       "passed": true
     },
     {
       "name": "1440px product gallery and all five enlarged images",
-      "passed": true,
-      "details": [
-        {
-          "source": "http://127.0.0.1:4173/assets/product-studio-1122.jpg",
-          "width": 1122,
-          "height": 1402
-        },
-        {
-          "source": "http://127.0.0.1:4173/assets/editorial-kitchen-1122.jpg",
-          "width": 1122,
-          "height": 1402
-        },
-        {
-          "source": "http://127.0.0.1:4173/assets/product-front-1122.jpg",
-          "width": 1122,
-          "height": 1402
-        },
-        {
-          "source": "http://127.0.0.1:4173/assets/product-detail-1122.jpg",
-          "width": 1122,
-          "height": 1402
-        },
-        {
-          "source": "http://127.0.0.1:4173/assets/editorial-coffee-1122.jpg",
-          "width": 1122,
-          "height": 1402
-        }
-      ]
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: The enlarged photograph should preserve the available native resolution.\n    at file:///home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:246:9\n    at async check (file:///home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:55:21)\n    at async file:///home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:225:5"
     },
     {
       "name": "1-shelf cart and correct Stripe checkout destination",
@@ -520,6 +481,9 @@
       "passed": true,
       "details": {
         "quantity": 4,
+        "subtotal": "$74.85",
+        "shipping": "Free",
+        "total": "$74.85",
         "checkoutEnabled": true,
         "destination": "https://buy.stripe.com/14A4gybk46zj4Prao55Rm06",
         "stripeNetworkIntercepted": true
@@ -530,6 +494,9 @@
       "passed": true,
       "details": {
         "quantity": 5,
+        "subtotal": "$93.56",
+        "shipping": "Free",
+        "total": "$93.56",
         "checkoutEnabled": true,
         "destination": "https://buy.stripe.com/6oUdR81Ju8Hr81D1Rz5Rm07",
         "stripeNetworkIntercepted": true
@@ -540,6 +507,9 @@
       "passed": true,
       "details": {
         "quantity": 6,
+        "subtotal": "$112.28",
+        "shipping": "Free",
+        "total": "$112.28",
         "checkoutEnabled": true,
         "destination": "https://buy.stripe.com/28EeVcco83n71Df7bT5Rm08",
         "stripeNetworkIntercepted": true
@@ -550,6 +520,9 @@
       "passed": true,
       "details": {
         "quantity": 7,
+        "subtotal": "$130.99",
+        "shipping": "Free",
+        "total": "$130.99",
         "checkoutEnabled": true,
         "destination": "https://buy.stripe.com/3cI00i5ZK8Hreq1cwd5Rm09",
         "stripeNetworkIntercepted": true
@@ -560,6 +533,9 @@
       "passed": true,
       "details": {
         "quantity": 8,
+        "subtotal": "$149.70",
+        "shipping": "Free",
+        "total": "$149.70",
         "checkoutEnabled": true,
         "destination": "https://buy.stripe.com/14A4gy3RC1eZ0zbeEl5Rm0a",
         "stripeNetworkIntercepted": true
@@ -570,6 +546,9 @@
       "passed": true,
       "details": {
         "quantity": 9,
+        "subtotal": "$168.41",
+        "shipping": "Free",
+        "total": "$168.41",
         "checkoutEnabled": true,
         "destination": "https://buy.stripe.com/dRm4gy2Nyg9Teq1gMt5Rm0b",
         "stripeNetworkIntercepted": true
@@ -580,6 +559,9 @@
       "passed": true,
       "details": {
         "quantity": 10,
+        "subtotal": "$187.13",
+        "shipping": "Free",
+        "total": "$187.13",
         "checkoutEnabled": true,
         "destination": "https://buy.stripe.com/cNiaEWag0cXH95H67P5Rm0c",
         "stripeNetworkIntercepted": true
@@ -590,6 +572,9 @@
       "passed": true,
       "details": {
         "quantity": 11,
+        "subtotal": "$205.84",
+        "shipping": "Free",
+        "total": "$205.84",
         "checkoutEnabled": true,
         "destination": "https://buy.stripe.com/dRmdR83RCf5P0zbeEl5Rm0d",
         "stripeNetworkIntercepted": true
@@ -600,30 +585,53 @@
       "passed": true,
       "details": {
         "quantity": 12,
+        "subtotal": "$224.55",
+        "shipping": "Free",
+        "total": "$224.55",
         "checkoutEnabled": true,
         "destination": "https://buy.stripe.com/7sY7sK87Sg9T2Hj1Rz5Rm0e",
         "stripeNetworkIntercepted": true
       }
     },
     {
+      "name": "Optional bundle promotion upgrades one shelf to the approved duo",
+      "passed": true
+    },
+    {
+      "name": "Below-fold content appears while scrolling with motion enabled",
+      "passed": false,
+      "error": "page.waitForFunction: Timeout 7000ms exceeded.\n    at /home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:394:18\n    at async check (/home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:55:21)\n    at async file:///home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:389:5"
+    },
+    {
       "name": "Browsing promotion remains dismissible",
       "passed": true
     }
   ],
-  "errors": [],
+  "errors": [
+    {
+      "name": "1440px product gallery and all five enlarged images",
+      "error": "AssertionError [ERR_ASSERTION]: The enlarged photograph should preserve the available native resolution.\n    at file:///home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:246:9\n    at async check (file:///home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:55:21)\n    at async file:///home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:225:5"
+    },
+    {
+      "name": "Below-fold content appears while scrolling with motion enabled",
+      "error": "page.waitForFunction: Timeout 7000ms exceeded.\n    at /home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:394:18\n    at async check (/home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:55:21)\n    at async file:///home/runner/work/Magnest-/Magnest-/tools/browser-check.mjs:389:5"
+    }
+  ],
   "screenshots": [
     "review/storefront-320.jpg",
     "review/storefront-390.jpg",
     "review/hero-390.jpg",
     "review/shop-390.jpg",
-    "review/story-390.jpg",
+    "review/usage-390.jpg",
     "review/storefront-701.jpg",
     "review/storefront-768.jpg",
     "review/storefront-1440.jpg",
     "review/hero-1440.jpg",
     "review/shop-1440.jpg",
-    "review/story-1440.jpg",
-    "review/cart-390.jpg"
+    "review/usage-1440.jpg",
+    "review/offer-390.jpg",
+    "review/cart-390.jpg",
+    "review/promo-390.jpg"
   ],
-  "passed": true
+  "passed": false
 }

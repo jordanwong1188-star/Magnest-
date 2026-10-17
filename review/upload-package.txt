@@ -32,37 +32,3 @@ Archive:  review/magnanest-cloudflare-upload.zip
     testing: privacy.html             OK
     testing: checkout-config.js       OK
 No errors detected in compressed data of review/magnanest-cloudflare-upload.zip.
-
-PACKAGE CONTENTS
-favicon.svg
-styles.css
-assets/
-assets/editorial-kitchen-360.jpg
-assets/magnanest-product-4.webp
-assets/product-detail-360.jpg
-assets/product-detail-1122.jpg
-assets/editorial-coffee-360.jpg
-assets/product-front-720.jpg
-assets/magnanest-product-3.webp
-assets/editorial-kitchen-720.jpg
-assets/editorial-coffee-1122.jpg
-assets/magnanest-product-5.webp
-assets/magnanest-product-1.webp
-assets/product-studio-360.jpg
-assets/editorial-kitchen-1122.jpg
-assets/product-detail-720.jpg
-assets/product-studio-720.jpg
-assets/product-front-1122.jpg
-assets/product-studio-1122.jpg
-assets/product-front-360.jpg
-assets/magnanest-product-2.webp
-assets/editorial-coffee-720.jpg
-index.html
-shipping-and-returns.html
-robots.txt
-_headers
-app.js
-404.html
-sitemap.xml
-privacy.html
-checkout-config.js
