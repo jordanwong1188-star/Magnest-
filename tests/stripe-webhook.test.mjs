@@ -62,7 +62,7 @@ test('records confirmed paid shelf quantities exactly once', async () => {
   assert.equal(database.recorded.size, 1);
   const saved = database.recorded.values().next().value;
   assert.equal(saved[3], 3);
-  assert.equal(saved[10], 'awaiting_supplier_configuration');
+  assert.equal(saved[10], 'awaiting_supplier_order');
   assert.equal(JSON.parse(saved[9]).country, 'CA');
 });
 
