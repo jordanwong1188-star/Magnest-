@@ -102,14 +102,14 @@ export async function onRequestPost({ request, env }) {
       name,
       shipping?.phone || customer.phone || null,
       address ? JSON.stringify(address) : null,
-      canShip ? 'awaiting_supplier_configuration' : 'needs_shipping_review'
+      canShip ? 'awaiting_supplier_order' : 'needs_shipping_review'
     ).run();
   } catch {
     // Stripe will retry. Never respond 2xx if the paid order was not persisted.
     return reply('Temporary order storage failure', 503);
   }
 
-  // Intentional safety gate: NO CJ charge, dispatch or automatic order creation here.
-  // First confirm Alibaba stock transfer vs CJ catalog sourcing and the verified SKU.
+  // Intentional safety gate: NO supplier order, payment, or dispatch here.
+  // The merchant reviews each paid order and places it with their existing Alibaba supplier.
   return reply('ok');
 }
