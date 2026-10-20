@@ -12,10 +12,13 @@ CREATE TABLE IF NOT EXISTS fulfillment_orders (
   shipping_phone TEXT,
   shipping_address_json TEXT,
   fulfillment_state TEXT NOT NULL CHECK (
-    fulfillment_state IN ('awaiting_supplier_configuration', 'needs_shipping_review',
-      'cj_draft_requested', 'cj_unpaid', 'fulfilled', 'canceled')
+    fulfillment_state IN ('awaiting_supplier_order', 'needs_shipping_review',
+      'supplier_ordered', 'shipped', 'delivered', 'canceled')
   ),
-  cj_order_id TEXT,
+  supplier_order_ref TEXT,
+  carrier TEXT,
+  tracking_number TEXT,
+  tracking_url TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
