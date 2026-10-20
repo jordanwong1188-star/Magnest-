@@ -1,0 +1,30 @@
+name: Stripe fulfillment inbox checks
+
+on:
+  pull_request:
+    paths:
+      - 'functions/**'
+      - 'migrations/**'
+      - 'tests/stripe-webhook.test.mjs'
+      - 'scripts/build-cloudflare.mjs'
+      - '.github/workflows/stripe-fulfillment.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  signed-webhook:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test Stripe webhook
+        run: node --test tests/stripe-webhook.test.mjs
+      - name: Build Cloudflare Pages
+        run: node scripts/build-cloudflare.mjs
+      - name: Verify webhook-only Pages Functions routing
+        run: |
+          node -e "const fs=require('fs'); const routes=JSON.parse(fs.readFileSync('dist/_routes.json','utf8')); if(JSON.stringify(routes.include)!=='[\"/api/stripe-webhook\"]') process.exit(1)"

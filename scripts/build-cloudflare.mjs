@@ -10,6 +10,8 @@ for (const name of ['index.html','styles.css','app.js','checkout-config.js','shi
   await cp(resolve(root,name),resolve(output,name),{recursive:true});
 }
 await writeFile(resolve(output,'_headers'),'/checkout-config.js\n  Cache-Control: no-store\n');
+// Route only the signed webhook through Pages Functions. All other pages stay static.
+await writeFile(resolve(output,'_routes.json'), JSON.stringify({version:1,include:['/api/stripe-webhook'],exclude:[]}));
 const origin = new URL(process.env.CF_PAGES_URL || 'https://magnanest.pages.dev').origin;
 await writeFile(resolve(output,'robots.txt'),'User-agent: *\nAllow: /\nSitemap: '+origin+'/sitemap.xml\n');
 const urls=['/','/shipping-and-returns.html','/privacy.html'].map(path=>'<url><loc>'+origin+path+'</loc></url>').join('');
